@@ -1,0 +1,425 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- Bootstrap -->
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+<link href="<c:url value='/css/egovframework/whms/wijmo/vendor/wijmo.min.css'/>" rel="stylesheet" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/style.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/reset.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/animate.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/jquery-ui.min.css' />" type="text/css" />
+
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.grid.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.chart.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.input.min.js'/>" type="text/javascript"></script>
+
+<script src="<c:url value='/js/egovframework/whms/jquery-1.11.3.min.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/jquery-ui.min.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/front-ui.js' />" type="text/javascript"></script>
+<script type="text/javascript" src="<c:url value='/js/egovframework/whms/jquery.navgoco.js' />"></script><!-- left menu js -->
+<script> 
+wijmo.setLicenseKey ('14.51.236.196|14.51.236.206|14.51.236.235|203.236.236.136|61.33.235.245|www.cnkoh.co.kr|www.whmscnko.co.kr,825287534425196#B0tM3N7gjM5IDOiojIklkIs4nIxYXOxAjMiojIyVmdiwSZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34zdv2EWDxkWSRVQ9JHZ5RUWVJmZxQjaMRlZ9QGZBZnSMljekR7LtlGdrY6VVlHO5dGOjhFO5g5bDFWYGl4L5IHSmdzawFUSBtmUD5keKh6YzhVQ92yTrZHe9BFZIZmV556QS54T6ljUwVWZ5FVTt9mdjxkRzhDVLRmSNNHU7o4ZudEdS5UcudHZrk5NIVGajVFO5YzUZNXYY5kVR3ycmdzMRlWTjZWe8t6a7kUek56TT9kbMVjRDR6UsJUUrUjYtdnUSh4MuRmb9UFan5keHxGdXpVeth6Q92SethWaDFnaN36Sox4ZJVGa4omcLJXcMRXdCtWSDljSM9GSMZ7UO3WRykEa5IXSTJEWll5LCFXZTBXe9hWYHNTcIBzb7Y5LV3SaqB7axUkcvkzVYVlMmF5dMJXZEZDM8QlbUJDbqlFRroURWd6SNNTSXtEeDpWbx4kUygGdEJlI0IyUiwiICN4Q9E4M9QjI0ICSiwSN4UDN5kTNxQTM0IicfJye#4Xfd5nIJBjMSJiOiMkIsIibvl6cuVGd8VEIgQXZlh6U8VGbGBybtpWaXJiOi8kI1xSfiUTSOFlI0IyQiwiIu3Waz9WZ4hXRgAicldXZpZFdy3GclJFIv5mapdlI0IiTisHL3JyS7gDSiojIDJCLi86bpNnblRHeFBCI73mUpRHb55EIv5mapdlI0IiTisHL3JCNGZDRiojIDJCLi86bpNnblRHeFBCIQFETPBCIv5mapdlI0IiTisHL3JyMDBjQiojIDJCLiUmcvNEIv5mapdlI0IiTisHL3JSV8cTQiojIDJCLi86bpNnblRHeFBCI4JXYoNEbhl6YuFmbpZEIv5mapdlI0IiTis7W0ICZyBlIsISMwAjMxADI5ADOwkTMwIjI0ICdyNkIsIicr9ybj9ybr96Yz5Ga79yd7dHLytmLvNmLo36auNmL7d7dsUDNy8SNzIjLzMjLxYDL6MTMuYzMy8iNzIjLzAjMsUzMy8iNzIjLxUjL4EDL6AjMuYzMy8SM58CNxwiN9EjL6MjMuETNuQTMiojIz5GRiwiIU6L1kWJ1oSJ1iojIh94QiwiI6kTMdI4N'); 
+</script>
+<script>
+
+	/** wijmo grid 객체 */
+	var tcMainGrid;
+	/** wijmo popup 객체 */
+	var dlgDetail;
+	/** left 메뉴 script 사용 path */
+	var path = location.origin;
+
+	/** wijmo column 정의 */
+	var flexColumns = [
+		{ header: 'No', binding: "no", width: 60 },
+		{ header: '고위험군구분', binding: 'highDgrCd',  isReadOnly: true },
+		{ header: '허브코드', binding: 'useGrpCd', isReadOnly: true, width: 0 },
+		{ header: 'Hub', binding: 'useGrpNm', isReadOnly: true, width: 80 },
+		{ header: '이름', binding: 'usrNm', isReadOnly: true, width: 80 },
+		{ header: 'ID', binding: 'usrId',  isReadOnly: true },
+		{ header: '성별', binding: 'sexSecd',  isReadOnly: true, width: 60 },
+	    { header: '생년월일', binding: 'birDt',  isReadOnly: true, width: 100 },
+		{ header: '연락처', binding: 'connTelno',  isReadOnly: true, width: 120 },
+		/* { header: '입사일', binding: 'entryDt',  isReadOnly: true, width: 100 }, */
+		{ header: '구분', binding: 'usrType',  isReadOnly: true, width: 60 },
+		{ header: '근무일수', binding: 'dutyDy',  isReadOnly: true, width: 80 },
+		{ header: '연속근무기간', binding: 'contDutyDy',  isReadOnly: true, width: 80 },
+		{ header: '야간연속근무기간', binding: 'ngcnDutyDy',  isReadOnly: true, width: 120 },
+		{ header: '검진대상자', binding: 'medYn',  isReadOnly: true, width: 80 },
+		{ header: '혈압 수축', binding: 'hypctCt',  isReadOnly: true, width: 80 },
+		{ header: '혈압 이완', binding: 'hyprxCt',  isReadOnly: true, width: 80 },
+		{ header: '맥박', binding: 'plsCt',  isReadOnly: true, width: 80 },
+		{ header: '최종측정일', binding: 'lstChkDt',  isReadOnly: true, width: 100 },
+		{ header: '유소견여부', binding: 'dcviwYn', isReadOnly: true, width: 80 },
+		{ header: '최근검진일자', binding: 'lstMedDt',  isReadOnly: true, width: 100 },
+		{ header: '교육일자', binding: 'eduDt', isReadOnly: true, width: 100 },
+		{ header: '교육이수여부', binding: 'eduCptYn',  isReadOnly: true, width: 100 },
+		{ header: '검진일자', binding: 'meckuDt', isReadOnly: true, width: 100 },
+		{ header: '검진종류', binding: 'meckuNm',  isReadOnly: true, width: 100 }
+	];
+
+	/** Left Menu 동작 script */
+	function choiceNodes(nodeNum) {
+		var nodeValues = document.selectOne.tmp_menuNm[nodeNum].value.split("|");
+		if(nodeValues[5].indexOf("dir") < 0) {				// directory가 아니면 페이지 이동
+			document.selectOne.vStartP.value=nodeValues[0];
+			document.selectOne.chkURL.value=nodeValues[5];
+			parent.parent.document.getElementById("main_top").contentWindow.document.getElementById("upper_menu_nm").innerHTML = nodeValues[6];
+			parent.parent.document.getElementById("main_top").contentWindow.document.getElementById("menu_nm").innerHTML = nodeValues[2];
+	 	    document.selectOne.action = "<c:url value='/sym/mnu/mpm/EgovMainMenuRight.do'/>";
+		    document.selectOne.submit();
+		} else {
+			top.location.href=path + "/sym/mnu/mpm/EgovMainMenuIndex.do?menuNo="+nodeValues[0]+"&chkURL=dir";
+		}
+	}
+
+	$("html").keydown(function(e) {
+		var k = window.event.keyCode;
+		if(window.event.ctrlKey && k == 85) {
+			alert("소스보기가 금지 되어있습니다");
+			event.keyCode = 0;
+			event.cancleBubble = true;
+			event.returnValue = false;
+		}
+	});
+
+	$( function() {
+	    $( ".input_d" ).datepicker({
+	    	changeMonth: true,
+	        changeYear: true,
+	        dateFormat: 'yy-mm-dd'
+	    });
+	} );
+
+
+	/** Grid setting **/
+	onload = function() {
+
+		/** Enter 처리 */
+	    $(".stat_search input[type=text]").keydown(function(key) {
+			if (key.keyCode == 13) {
+				searchData();
+			}
+		});
+
+		//flexColums.push( { header: '테스트', binding: 'test',  isReadOnly: true } );
+
+		createGrid();
+
+		/** grid data mapping script */
+		function getData() {
+
+			var sexSecd = $.trim($("select[name=sexSecd]").val());
+			var highDgrCd = $.trim($("select[name=highDgrCd]").val());
+			var chkStDtm = $.trim($("input[name=chkStDtm]").val());
+			var chkEndDtm = $.trim($("input[name=chkEndDtm]").val());
+			var hypctCt = $.trim($("input[name=hypctCt]").val());
+			var hyprxCt = $.trim($("input[name=hyprxCt]").val());
+			var qsltStDt = $.trim($("input[name=qsltStDt]").val());
+			var qsltEndDt = $.trim($("input[name=qsltEndDt]").val());
+			var meckuCd = $.trim($("select[name=meckuCd]").val());
+			var meckuStDt = $.trim($("input[name=meckuStDt]").val());
+			var meckuEndDt = $.trim($("input[name=meckuEndDt]").val());
+
+			/** Data Initialize **/
+		    var data = [];
+
+		    /** Data binding Ajax **/
+		    $.ajax({
+				type:"POST",
+				url:"<c:url value='/whms/sm/userReportAjax.do' />",
+				data:{
+					"sexSecd": sexSecd,
+					"highDgrCd": highDgrCd,
+					"chkStDtm": chkStDtm,
+					"chkEndDtm": chkEndDtm,
+					"hypctCt": hypctCt,
+					"hyprxCt": hyprxCt,
+					"qsltStDt": qsltStDt,
+					"qsltEndDt": qsltEndDt,
+					"meckuCd": meckuCd,
+					"meckuStDt": meckuStDt,
+					"meckuEndDt": meckuEndDt
+				},
+				dataType:'json',
+				timeout:(1000*60),
+				async: false,
+				success:function(returnData, status) {
+					if(status == "success") {
+						if(returnData != null) {
+							if(returnData.dataList && returnData.dataList.length != 0) {
+								$(".text-number").text(returnData.dataList.length);
+								for(var i=0; i<returnData.dataList.length; i++) {
+									var result = returnData.dataList[i];
+									data.push({
+										no: (i+1),
+										useGrpCd: result.useGrpCd,
+										useGrpNm: result.useGrpNm,
+							            usrId: result.usrId,
+							            usrNm: result.usrNm,
+							            sexSecd: result.sexSecd == null ? "" : result.sexSecd == "01" ? "남자" : "여자",
+							            birDt: result.birDt,
+							            connTelno: result.connTelno,
+							            /* entryDt: result.entryDt, */
+							            dutyDy: result.dutyDy,
+							            contDutyDy: result.contDutyDy,
+							            ngcnDutyDy: result.ngcnDutyDy,
+							            highDgrCd: result.highDgrNm,
+							            medYn : result.medYn == "Y" ? "Y" : "N",
+							            eduDt: result.eduDt,
+							            eduCptYn: result.eduCptYn == "Y" ? "Y" : "N",
+					            		hypctCt: result.hypctCt,
+					            		hyprxCt: result.hyprxCt,
+					            		plsCt: result.plsCt,
+					            		dcviwYn: result.dcviwYn == null || result.dcviwYn == "" ? "N" : result.dcviwYn,
+					            		lstChkDt: result.lstChkDt
+							        });
+								}
+							} else {
+								$(".text-number").text(0);
+							}
+						} else {
+							$(".text-number").text(0);
+						}
+					} else {
+						$(".text-number").text(0);
+						alert("ERROR!");return;
+					} 
+				}
+			});
+
+		    return data;
+		}
+
+		/** 검색 관련 function */
+		function searchData() {
+			tcMainGrid.dispose();
+			createGrid();
+		}
+
+		/** grid 생성 */
+		function createGrid() {
+
+			// create a grid to show and edit the data
+			tcMainGrid = new wijmo.grid.FlexGrid('#tcMainGrid', {
+			    allowDelete: true,
+			    autoGenerateColumns: false,
+			    frozenColumns: 6,
+			    columns: flexColumns,
+			    itemsSource: getData()
+			});
+
+			/** grid 첫번째 colume 숨김 */
+			tcMainGrid.headersVisibility = "Column";
+
+			//다중 헤더 추가
+			for (var i = 0; i < 1; i++) {
+			    var hr = new wijmo.grid.Row();
+			    tcMainGrid.columnHeaders.rows.push(hr);
+			}
+
+			// 컬럼 헤더에 데이터 추가 및 컬럼 헤더 병합
+			tcMainGrid.allowMerging = wijmo.grid.AllowMerging.AllHeaders;
+
+			for (var r = 0; r < tcMainGrid.columnHeaders.rows.length; r++) {
+				tcMainGrid.columnHeaders.rows[0].allowMerging = true;
+			    for (var c = 0; c < tcMainGrid.columnHeaders.columns.length; c++) {
+			    	if(r == 0) {
+			    		if (c == 0) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "No");
+				        } else if (c == 1) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "고위험군구분");
+				        } else if (c >=3 && c <= 8) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "기본정보");
+				        } else if (c >=9 && c <= 12) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "근무정보");
+				        } else if (c >=13 && c <= 17) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "검진정보");
+				        } else if (c >=18 && c <= 19) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "문진정보");
+				        } else if (c >=20 && c <= 21) {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "교육정보");
+				        } else {
+				        	tcMainGrid.columnHeaders.setCellData(r, c, "검진정보");
+				        }
+			    	}
+			    	tcMainGrid.columnHeaders.columns[c].allowMerging = true;
+	        		tcMainGrid.columnHeaders.align = "center";
+			    }
+			}
+
+			// 해더의 vertical align 설정
+			 tcMainGrid.formatItem.addHandler(function (s, e) {
+			   if (e.panel.cellType === wijmo.grid.CellType.ColumnHeader) {
+			       e.cell.innerHTML = '<div>' + e.cell.innerHTML + '</div>';
+			       wijmo.setCss(e.cell.children[0], {
+			           position: 'relative',
+			           top: '50%',
+			           transform: 'translateY(-50%)'
+			       });
+			   }
+			});
+
+		}
+
+		/** 조회 버튼 event */
+		document.getElementById('btnSearch').addEventListener('click', function () {
+			searchData();
+		});
+
+	}
+
+</script>
+</head>
+<body id="tbody" oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+<form name="selectOne">
+	<input name="currentMenu" type="hidden" value="<c:out value='${param.vStartP}'/>" />
+	<c:forEach var="result" items="${list_menulist}" varStatus="status" >
+		<input type="hidden" name="tmp_menuNm" value="${result.menuNo}|${result.upperMenuId}|${result.menuNm}|${result.relateImagePath}|${result.relateImageNm}|${result.chkURL}|${result.upperMenuNm}"/>
+	</c:forEach>
+	<input name="vStartP" type="hidden" />
+	<input name="chkURL" type="hidden" />
+	<input id="modal_type" type="hidden" value="" />
+</form>
+<div id="subcontainer">
+  <div class="swrap">
+    <div class="subcont">
+      <div class="left_area"> 
+        <!-- navi -->
+		<div class="lnav" id="lmenu">
+			<c:forEach var="menu" items="${list_menulist}" varStatus="status" >
+				<c:if test="${menu.childCnt != 0 }">
+					<li id="li<c:out value='${menu.menuNo}'/>">
+						<a href="javascript:choiceNodes('<c:out value="${menu.rowNumber}"/>')"><c:out value='${menu.menuNm}'/></a>
+						<ul>
+							<c:forEach var="menu_lv2" items="${list_menulist}" varStatus="status" >
+								<c:if test="${menu.menuNo == menu_lv2.upperMenuId }">
+									<li id="li<c:out value='${menu_lv2.menuNo}'/>"><a href="javascript:choiceNodes('<c:out value="${menu_lv2.rowNumber}"/>')"><c:out value='${menu_lv2.menuNm}'/></a></li>
+								</c:if>
+							</c:forEach>
+						</ul>
+					</li>
+				</c:if>
+			</c:forEach>
+		</div>
+        <!-- // navi --> 
+      </div>
+      <!-- // left_area -->
+      
+      <div class="right_area"> 
+        <div class="summary_tit">
+          <h3>보고서</h3>
+        </div>
+        <div class="stat_search"> 
+		<ul>
+			<li class="tit_area">성별</li>
+			<li class="cont_area small100 mr40">
+				<div class="select w100p">
+					<select name="sexSecd" >
+					  <option value="" selected>전체</option>
+					  <option value="01">남자</option>
+					  <option value="02">여자</option>
+					</select>
+				</div>
+			</li>
+			<li class="tit_area" style="width: 90px;">고위험구분</li>
+			<li class="cont_area small100" style="margin-right:29px;">
+				<div class="select w100p">
+					<select name="highDgrCd" >
+					  <option value="" selected>전체</option>
+					  <option value="21">고위험</option>
+					  <option value="22">고위험(예비)</option>
+					  <option value="23">일반관리</option>
+					  <option value="24">정상</option>
+					</select>
+				</div>
+			</li>
+			<li class="tit_area" style="width:90px">혈압측정일</li>
+			<li class="cont_area smalldate mr10">
+				<div class="datebox">
+					<input id="chkStDtm" name="chkStDtm" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+				<span class="txt">~</span>
+				<div class="datebox">
+					<input id="chkEndDtm" name="chkEndDtm" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+			</li>
+		</ul>
+		<ul>
+			<li class="tit_area">혈압(수축)</li>
+			<li class="cont_area smallinput mr20">
+				<input id="hypctCt" name="hypctCt" type="text" title="" class="" value="" style="width: 80px;"  placeholder="" autocomplete="off" />
+				<span class="txt">이상</span>
+			</li>
+			<li class="tit_area" style="width: 90px;">혈압(이완)</li>
+			<li class="cont_area smallinput mr10">
+				<input id="hyprxCt" name="hyprxCt" type="text" title="" class="" value="" style="width: 80px;"  placeholder="" autocomplete="off" />
+				<span class="txt">이상</span>
+			</li>
+			<li class="tit_area" style="width: 90px;">문진일자</li>
+			<li class="cont_area smalldate mr10">
+				<div class="datebox">
+					<input id="qsltStDt" name="qsltStDt" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+				<span class="txt">~</span>
+				<div class="datebox">
+					<input id="qsltEndDt" name="qsltEndDt" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+			</li>
+		</ul>
+		<ul>
+			<li class="tit_area">검진종류</li>
+			<li class="cont_area small100" style="width: 120px; margin-right: 239px;">
+				<div class="select w100p" style="width: 120px;">
+					<select name="meckuCd" >
+					  <option value="" selected>전체</option>
+					  <option value="01">배치전 건강검진</option>
+					  <option value="02">배치후 건강검진</option>
+					  <option value="03">일반 건강검진</option>
+					  <option value="04">특수 건강검진</option>
+					</select>
+				</div>
+			</li>
+			<li class="tit_area" style="width: 91px">건강진단일자</li>
+			<li class="cont_area smalldate mr10">
+				<div class="datebox">
+					<input id="meckuStDt" name="meckuStDt" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+				<span class="txt">~</span>
+				<div class="datebox">
+					<input id="meckuEndDt" name="meckuEndDt" type="text" title="" class="input_d" accesskey="S" value=""  placeholder="" autocomplete="off" />
+				</div>
+			</li>
+		</ul>
+		<div class="btn_area"><button type="button" class="btn-type btn_ico black" id="btnSearch"><span class="i_search_black">조회</span></button></div>
+        </div>
+
+        <div id="tcMainGrid"></div>
+
+		<span class="pull-right text-count">Total <span class="text-number">0</span></span>
+
+      </div>
+      <!-- // right_area --> 
+      
+    </div>
+    <!-- // subcont --> 
+    
+  </div>
+  <!-- // swrap -->
+  
+</div>
+<!-- // subcontainer -->
+
+<div class="btn_up_layer"></div>
+<script src="<c:url value='/js/egovframework/whms/needpopup.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/default.js' />" type="text/javascript"></script>
+</body>
+</html>

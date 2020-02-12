@@ -1,0 +1,494 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- Bootstrap -->
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+<link href="<c:url value='/css/egovframework/whms/wijmo/vendor/wijmo.min.css'/>" rel="stylesheet" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/style.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/reset.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/animate.css' />" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/css/egovframework/whms/jquery-ui.min.css' />" type="text/css" />
+
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.grid.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.chart.min.js'/>" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/wijmo/vendor/wijmo.input.min.js'/>" type="text/javascript"></script>
+
+<script src="<c:url value='/js/egovframework/whms/jquery-1.11.3.min.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/jquery-ui.min.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/front-ui.js' />" type="text/javascript"></script>
+<script type="text/javascript" src="<c:url value='/js/egovframework/whms/jquery.navgoco.js' />"></script><!-- left menu js -->
+<script> 
+wijmo.setLicenseKey ('14.51.236.196|14.51.236.206|14.51.236.235|203.236.236.136|61.33.235.245|www.cnkoh.co.kr|www.whmscnko.co.kr,825287534425196#B0tM3N7gjM5IDOiojIklkIs4nIxYXOxAjMiojIyVmdiwSZzxWYmpjIyNHZisnOiwmbBJye0ICRiwiI34zdv2EWDxkWSRVQ9JHZ5RUWVJmZxQjaMRlZ9QGZBZnSMljekR7LtlGdrY6VVlHO5dGOjhFO5g5bDFWYGl4L5IHSmdzawFUSBtmUD5keKh6YzhVQ92yTrZHe9BFZIZmV556QS54T6ljUwVWZ5FVTt9mdjxkRzhDVLRmSNNHU7o4ZudEdS5UcudHZrk5NIVGajVFO5YzUZNXYY5kVR3ycmdzMRlWTjZWe8t6a7kUek56TT9kbMVjRDR6UsJUUrUjYtdnUSh4MuRmb9UFan5keHxGdXpVeth6Q92SethWaDFnaN36Sox4ZJVGa4omcLJXcMRXdCtWSDljSM9GSMZ7UO3WRykEa5IXSTJEWll5LCFXZTBXe9hWYHNTcIBzb7Y5LV3SaqB7axUkcvkzVYVlMmF5dMJXZEZDM8QlbUJDbqlFRroURWd6SNNTSXtEeDpWbx4kUygGdEJlI0IyUiwiICN4Q9E4M9QjI0ICSiwSN4UDN5kTNxQTM0IicfJye#4Xfd5nIJBjMSJiOiMkIsIibvl6cuVGd8VEIgQXZlh6U8VGbGBybtpWaXJiOi8kI1xSfiUTSOFlI0IyQiwiIu3Waz9WZ4hXRgAicldXZpZFdy3GclJFIv5mapdlI0IiTisHL3JyS7gDSiojIDJCLi86bpNnblRHeFBCI73mUpRHb55EIv5mapdlI0IiTisHL3JCNGZDRiojIDJCLi86bpNnblRHeFBCIQFETPBCIv5mapdlI0IiTisHL3JyMDBjQiojIDJCLiUmcvNEIv5mapdlI0IiTisHL3JSV8cTQiojIDJCLi86bpNnblRHeFBCI4JXYoNEbhl6YuFmbpZEIv5mapdlI0IiTis7W0ICZyBlIsISMwAjMxADI5ADOwkTMwIjI0ICdyNkIsIicr9ybj9ybr96Yz5Ga79yd7dHLytmLvNmLo36auNmL7d7dsUDNy8SNzIjLzMjLxYDL6MTMuYzMy8iNzIjLzAjMsUzMy8iNzIjLxUjL4EDL6AjMuYzMy8SM58CNxwiN9EjL6MjMuETNuQTMiojIz5GRiwiIU6L1kWJ1oSJ1iojIh94QiwiI6kTMdI4N'); 
+</script>
+<script>
+
+	/** left 메뉴 script 사용 path */
+	var path = location.origin;
+
+	/** Left Menu 동작 script */
+	function choiceNodes(nodeNum) {
+		var nodeValues = document.selectOne.tmp_menuNm[nodeNum].value.split("|");
+		if(nodeValues[5].indexOf("dir") < 0) {				// directory가 아니면 페이지 이동
+			document.selectOne.vStartP.value=nodeValues[0];
+			document.selectOne.chkURL.value=nodeValues[5];
+			parent.parent.document.getElementById("main_top").contentWindow.document.getElementById("upper_menu_nm").innerHTML = nodeValues[6];
+			parent.parent.document.getElementById("main_top").contentWindow.document.getElementById("menu_nm").innerHTML = nodeValues[2];
+	 	    document.selectOne.action = "<c:url value='/sym/mnu/mpm/EgovMainMenuRight.do'/>";
+		    document.selectOne.submit();
+		} else {
+			top.location.href=path + "/sym/mnu/mpm/EgovMainMenuIndex.do?menuNo="+nodeValues[0]+"&chkURL=dir";
+		}
+	}
+
+	$("html").keydown(function(e) {
+		var k = window.event.keyCode;
+		if(window.event.ctrlKey && k == 85) {
+			alert("소스보기가 금지 되어있습니다");
+			event.keyCode = 0;
+			event.cancleBubble = true;
+			event.returnValue = false;
+		}
+	});
+
+	/** 검색 관련 function */
+	function searchData() {
+		if($('#searchCondition').val()=='') {
+			alert('검색 항목을 선택해주세요.');
+			$('#searchCondition').focus();
+			return false;
+		}
+		if($('#searchKeyword').val()=='') {
+			alert('검색어를 입력해주세요.');
+			$('#searchKeyword').focus();
+			return false;
+		}
+		/** 검색조건이 이름일 경우 동명이인 처리 script */
+		if($('#searchCondition').val() == "USR_NM") {
+			$.ajax({
+				type:"POST",
+				url:"<c:url value='/whms/hi/summaryCheckList.do' />",
+				data:{
+					"searchCondition": $('#searchCondition').val(),
+					"searchKeyword": $('#searchKeyword').val()
+				},
+				dataType:'json',
+				timeout:(1000*60),
+				async: false,
+				success:function(returnData, status) {
+					if(status == "success") {
+						if(returnData != null) {
+							if(returnData.dataList.length != 0) {
+								if(returnData.dataList.length == 1) {				// 한명이면 submit
+									$("#detailForm").submit();
+								} else {															// 동명이인 존재시 팝업 호출
+									// show dialog
+									$("#tb").html("");
+									for(var i=0; i<returnData.dataList.length; i++) {
+										var result = returnData.dataList[i];
+										var tmpHtml = "";
+										tmpHtml = tmpHtml.concat("<tr class='usrTr' onClick='fn_detail_submit("+result.usrId+")'>");
+										tmpHtml = tmpHtml.concat("<td>").concat(result.useGrpNm).concat("</td>");
+										tmpHtml = tmpHtml.concat("<td>").concat((result.usrNm == null || result.usrNm == "") ? "" : result.usrNm.substr(0,1).concat("**")).concat("</td>");
+										tmpHtml = tmpHtml.concat("<td>").concat(result.usrId).concat("</td>");
+										tmpHtml = tmpHtml.concat("<td>").concat((result.birDt == null || result.birDt == "") ? "" : result.birDt.substr(0,1).concat("***-**-**")).concat("</td>");
+										tmpHtml = tmpHtml.concat("<td>").concat((result.connTelno == null || result.connTelno == "") == null ? "" : "010-****-****").concat("</td>");
+										tmpHtml = tmpHtml.concat("</tr>");
+										$("#tb").append(tmpHtml);
+									}
+								    dlgDetail.show(true, function (s) {
+
+								    });
+								}
+							} else {
+								$("#detailForm").submit();
+							}
+						} else {
+							$("#detailForm").submit();
+						}
+					} else {
+						alert("조회 중 오류가 발생하였습니다. 관리자에게 문의하여 주십시오");
+						return;
+					}
+				}
+			});
+		} else {
+			$("#detailForm").submit();
+		}
+	}
+
+	/** 동명이인 팝업에서 row 클릭 시 ID로 값 세팅하여 submit */
+	function fn_detail_submit(id) {
+		$('#searchCondition').val("USR_ID").prop("selected", true);
+		$("#searchKeyword").val(id);
+		$("#detailForm").submit();
+	}
+ 
+	/** Chart setting **/
+	onload = function() {
+		<c:choose>
+			<c:when test="${not empty detailVO }">
+				//generate some random data
+				var appData = [];
+				var xAxis = [];
+	
+				<c:forEach var="date" items="${detailVO.monthList}" varStatus="status">
+					xAxis.push("<c:out value='${date.monthVal}'/>");
+					 appData.push({
+				    	 xAxis: "<c:out value='${date.monthVal}'/>"+"월",
+				         hypctCt: parseFloat("<c:out value='${date.avgHypctCt}'/>"),
+				         hyprxCt: parseFloat("<c:out value='${date.avgHyprxCt}'/>")
+				     });
+				</c:forEach>
+	
+				 // create FlexChart
+				 var gettingStartedChart = new wijmo.chart.FlexChart('#chartDiv');
+		
+				 // initialize FlexChart's properties
+				 gettingStartedChart.initialize({
+				   itemsSource: appData,
+				   bindingX: 'xAxis',
+				   series: [
+				     { name: '수축', binding: 'hypctCt' },
+				     { name: '이완', binding: 'hyprxCt' }
+				   ]
+				 });
+		
+				 gettingStartedChart.legend.position = 0;
+				 gettingStartedChart.chartType = 4;
+			 </c:when>
+			 <c:otherwise>
+			//generate some random data
+				var appData = [];
+				var xAxis = [];
+	
+				<c:forEach var="date" items="${monthList}" varStatus="status">
+					xAxis.push("<c:out value='${date.monthVal}'/>");
+					 appData.push({
+				    	 xAxis: "<c:out value='${date.monthVal}'/>"+"월",
+				         hypctCt: parseFloat("<c:out value='${date.avgHypctCt}'/>"),
+				         hyprxCt: parseFloat("<c:out value='${date.avgHyprxCt}'/>")
+				     });
+				</c:forEach>
+	
+				 // create FlexChart
+				 var gettingStartedChart = new wijmo.chart.FlexChart('#chartDiv');
+		
+				 // initialize FlexChart's properties
+				 gettingStartedChart.initialize({
+				   itemsSource: appData,
+				   bindingX: 'xAxis',
+				   series: [
+				     { name: '수축', binding: 'hypctCt' },
+				     { name: '이완', binding: 'hyprxCt' }
+				   ]
+				 });
+		
+				 gettingStartedChart.legend.position = 0;
+				 gettingStartedChart.chartType = 4;
+			 </c:otherwise>
+		 </c:choose>
+
+ 	}
+ 
+	$(document).ready(function() {
+		/** Enter 처리 */
+	    $("input[name=searchKeyword]").keydown(function(key) {
+			if (key.keyCode == 13) {
+				searchData();
+			}
+		});
+	    /** wijmo modal 세팅 */
+		dlgDetail = new wijmo.input.Popup('#dlgDetail', {
+		    removeOnHide: false
+		});
+	})
+
+</script>
+</head>
+<body id="tbody" oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+<form name="selectOne">
+	<input name="currentMenu" type="hidden" value="<c:out value='${param.vStartP}'/>" />
+	<c:forEach var="result" items="${list_menulist}" varStatus="status" >
+		<input type="hidden" name="tmp_menuNm" value="${result.menuNo}|${result.upperMenuId}|${result.menuNm}|${result.relateImagePath}|${result.relateImageNm}|${result.chkURL}|${result.upperMenuNm}"/>
+	</c:forEach>
+	<input name="vStartP" type="hidden" />
+	<input name="chkURL" type="hidden" />
+	<input id="modal_type" type="hidden" value="" />
+</form>
+	<div id="subcontainer">
+		<div class="swrap">
+			<div class="subcont">
+				<div class="left_area">
+					<div class="lnav" id="lmenu">
+						<c:forEach var="menu" items="${list_menulist}" varStatus="status" >
+							<c:if test="${menu.childCnt != 0 }">
+								<li id="li<c:out value='${menu.menuNo}'/>">
+									<a href="javascript:choiceNodes('<c:out value="${menu.rowNumber}"/>')"><c:out value='${menu.menuNm}'/></a>
+									<ul>
+										<c:forEach var="menu_lv2" items="${list_menulist}" varStatus="status" >
+											<c:if test="${menu.menuNo == menu_lv2.upperMenuId }">
+												<li id="li<c:out value='${menu_lv2.menuNo}'/>"><a href="javascript:choiceNodes('<c:out value="${menu_lv2.rowNumber}"/>')"><c:out value='${menu_lv2.menuNm}'/></a></li>
+											</c:if>
+										</c:forEach>
+									</ul>
+								</li>
+							</c:if>
+						</c:forEach>
+					</div>
+				</div>
+				<div class="right_area p25">
+					<form id="detailForm" name="detailForm" action="<c:url value='/whms/hi/pressureMeasureInfo.do'/>" method="post">
+						<input name="vStartP" type="hidden" value="<c:out value='${param.vStartP}'/>" />
+						<div class="reg_searchbox"> 
+							<!-- search_tb -->
+							<div class="search_tb mb0"> <span class="select w100p">
+							  <select name="searchCondition" id="searchCondition">
+							      <option value="USR_NM" <c:if test="${empty searchVO.searchCondition || searchVO.searchCondition == 'USR_NM' }">selected</c:if> >이름</option>
+							      <option value="USR_ID" <c:if test="${searchVO.searchCondition == 'USR_ID' }">selected</c:if> >ID</option>
+							    </select>
+							  </span> <span class="input w250p">
+							  <input type="text" placeholder="" id="searchKeyword" name="searchKeyword" value="<c:out value='${searchVO.searchKeyword }'/>" style="width:100%" />
+							  <input type="text" style="display: none;" />
+							  </span>
+							  <button type="button" class="btn-type btn_ico black" onClick="searchData()"><span class="i_search_black">조회</span></button>
+							</div>
+							<!-- // search_tb --> 
+							</div>
+							<div class="summary_tit">
+							  <h3>기본정보</h3>
+							</div>
+							<div class="table type2">
+							  <table>
+							    <colgroup>
+							  <col width="150">
+							  <col width="auto">
+							  <col width="150">
+							  <col width="150">
+							  <col width="150">
+							  <col width="150">
+							  </colgroup>
+							    <thead>
+							      <tr>
+							        <th>이름</th>
+							        <th>ID (핀번호)</th>
+							        <th>성별</th>
+							        <th>생년월일</th>
+							        <th>연락처</th>
+							        <th>등록일</th>
+							      </tr>
+							    </thead>
+							    <tbody>
+							    	<c:choose>
+							    		<c:when test="${empty detailVO }">
+							    			<td colspan="6">검색 데이터가 존재하지 않습니다.</td>
+							    		</c:when>
+							    		<c:otherwise>
+											<tr>
+												<td><c:out value='${detailVO.usrNm }'/></td>
+												<td><c:out value='${detailVO.usrId }'/></td>
+												<td><c:out value='${detailVO.sexSecd == "01" ? "남자" : "여자" }'/></td>
+												<td><c:out value='${detailVO.birDt }'/></td>
+												<td><c:out value='${detailVO.connTelno }'/></td>
+												<td><c:out value='${detailVO.sysRgsDt }'/></td>
+										      </tr>
+							    		</c:otherwise>
+							    	</c:choose>
+							    </tbody>
+							  </table>
+							</div>
+
+							<!-- blood_wrap -->
+							<div class="blood_wrap">
+								<div class="b_left"> 
+								<c:if test="${empty detailVO }">
+									<c:forEach var="date" items="${monthList}" varStatus="status">
+										<div class="roll_top">
+											<span class="people"></span>
+											<button type="button" class="btn-roll">
+												<span><c:out value='${date.yearVal }'/>년 <c:out value='${date.monthVal }'/>월</span><span class="count_span">(<c:out value='${date.countVal }'/>)</span>
+											</button>
+											<div class="roll-content">
+												<div class="table type3"></div>
+											</div>
+										<!-- // roll-content -->
+										</div>
+									</c:forEach>
+								</c:if>
+								<c:forEach var="date" items="${detailVO.monthList}" varStatus="status">
+									<div class="roll_top">
+										<span class="people"></span>
+										<button type="button" class="btn-roll">
+											<span><c:out value='${date.yearVal }'/>년 <c:out value='${date.monthVal }'/>월</span><span class="count_span">(<c:out value='${date.countVal }'/>)</span>
+										</button>
+										<div class="roll-content" <c:if test="${status.count == fn:length(detailVO.monthList)}">style='display: block'</c:if> >
+											<div class="table type3">
+												<table>
+													<colgroup>
+														<col width="100">
+														<col width="100">
+														<col width="90">
+														<col width="90">
+														<col width="auto">
+													</colgroup>
+													<tbody>
+														<c:forEach var="detail" items="${detailVO.detailList}" varStatus="status">
+															<c:if test="${detail.chkYear == date.yearVal and detail.chkMonth == date.monthVal }">
+																<tr>
+																	<td>
+																		<p>수축기</p>
+																		<div class="heart_lgreen"><c:out value='${detail.hypctCt }'/></div>
+																	</td>
+																	<td>
+																		<p>이완기</p>
+																		<div class="heart_green"><c:out value='${detail.hyprxCt }'/></div>
+																	</td>
+																	<td>
+																		<img src="<c:url value='/images/egovframework/whms/people_r.png' />" alt="" />
+																		<img src="<c:url value='/images/egovframework/whms/people_bl.png' />" alt="" />
+																	</td>
+																	<td>
+																		<p>맥박</p>
+																		<div class="bold_f20"><c:out value='${detail.plsCt }'/></div>
+																	</td>
+																	<td class="date">
+																		<c:out value='${detail.chkDtm }'/>
+																	</td>
+																</tr>
+															</c:if>
+														</c:forEach>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									<!-- // roll-content -->
+									</div>
+								</c:forEach>
+							  <!-- <div class="graybox">
+							   <h3>관리 내역</h3>
+							   <p>혈압 추가 측정 요청 문자 2회</p>
+							  </div> -->
+							</div>
+							<!-- // b_left -->
+							<div class="b_right">
+								<c:choose>
+								<c:when test="${detailVO != null and fn:length(detailVO.detailList) > 0 }">
+									<div class="heartbox">
+										<ul>
+											<li class="l_chk"></li>
+											<li class="r_cont">
+												<div class="hbox_m">
+													<p>수축기</p>
+													<!-- <div class="heart_red">160</div> -->
+													<div class="heart_lgreen"><c:out value='${detailVO.detailList[fn:length(detailVO.detailList)-1].hypctCt }'/></div>
+												</div>
+												<div class="hbox_m">
+													<p>이완기</p>
+													<!-- <div class="heart_orange">90</div> -->
+													<div class="heart_green"><c:out value='${detailVO.detailList[fn:length(detailVO.detailList)-1].hyprxCt }'/></div>
+												</div>
+												<div class="hbox_m">
+													<p>맥박</p>
+													<div class="bold_f20"><c:out value='${detailVO.detailList[fn:length(detailVO.detailList)-1].plsCt }'/></div>
+												</div>
+												<div class="hbox_m ml10">
+													<img src="<c:url value='/images/egovframework/whms/people_r.png' />" alt="" />
+													<img src="<c:url value='/images/egovframework/whms/people_s.png' />" alt="" />
+												</div>
+												<div class="hbox_b h_date">
+													<c:out value='${detailVO.detailList[fn:length(detailVO.detailList)-1].chkDtm }'/>
+												</div>
+											</li>
+										</ul>
+									</div>
+								</c:when>
+								<c:otherwise>
+									<div class="heartbox">
+										<ul>
+											<li class="l_chk"></li>
+											<li class="r_cont">
+												<div class="hbox_m">
+													<p>수축기</p>
+													<!-- <div class="heart_red">160</div> -->
+													<div class="heart_lgreen">0</div>
+												</div>
+												<div class="hbox_m">
+													<p>이완기</p>
+													<!-- <div class="heart_orange">90</div> -->
+													<div class="heart_green">0</div>
+												</div>
+												<div class="hbox_m">
+													<p>맥박</p>
+													<div class="bold_f20">0</div>
+												</div>
+												<div class="hbox_m ml10">
+													<img src="<c:url value='/images/egovframework/whms/people_r.png' />" alt="" />
+													<img src="<c:url value='/images/egovframework/whms/people_s.png' />" alt="" />
+												</div>
+												<div class="hbox_b h_date">
+													데이터가 존재하지 않습니다.
+												</div>
+											</li>
+										</ul>
+									</div>
+								</c:otherwise>
+								</c:choose>
+								<div id="chartDiv" class="graph_wrap"></div>
+							</div>
+							<!-- // b_right --> 
+							</div>
+							<!-- // blood_wrap -->
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-dialog" id="dlgDetail" style="display:none;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close wj-hide" aria-hidden="true">&times;</button>
+				<h4 class="modal-title">사용자 선택</h4>
+			</div>
+			<div class="modal-body">
+				<div class="table type1">
+					<table>
+						<colgroup>
+							<col width="80">
+							<col width="80">
+							<col width="80">
+							<col width="100">
+							<col width="100">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>허브명</th>
+								<th>이름</th>
+								<th>ID</th>
+								<th>생년월일</th>
+								<th>연락처</th>
+							</tr>
+						</thead>
+						<tbody id="tb">
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-warning wj-hide-cancel" >Cancel</button>
+			</div>
+		</div>
+	</div>
+
+<div class="btn_up_layer"></div>
+<script src="<c:url value='/js/egovframework/whms/needpopup.js' />" type="text/javascript"></script>
+<script src="<c:url value='/js/egovframework/whms/default.js' />" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+package egovframework.whms.bi.dataUpload.web;
+
+import java.net.URLEncoder;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import egovframework.com.cmm.EgovMessageSource;
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.sym.log.ulg.service.EgovUserLogService;
+import egovframework.com.sym.mnu.mpm.service.EgovMenuManageService;
+import egovframework.com.sym.mnu.mpm.service.MenuManageVO;
+/*import egovframework.com.utl.fcc.service.EgovAESDecoder;
+import egovframework.com.utl.fcc.service.EgovAriaDecoder;*/
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.whms.bi.dataUpload.service.DataUploadService;
+import egovframework.whms.bi.dataUpload.service.DataUploadVO;
+
+@Controller
+public class DataUploadController {
+
+	@Resource(name = "dataUploadService")
+	private DataUploadService dataUploadService;
+
+	/** EgovPropertyService */
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+
+	/** EgovMenuManageService */
+	@Resource(name = "meunManageService")
+    private EgovMenuManageService menuManageService;
+
+	@Resource(name="EgovUserLogService")
+	private EgovUserLogService userLogService;
+
+	/** EgovMessageSource */
+	@Resource(name = "egovMessageSource")
+	EgovMessageSource egovMessageSource;
+
+	/** 목록 및 페이징 */
+	@RequestMapping(value="/whms/bi/dataUploadList.do")
+	public String dataUploadList( @ModelAttribute("searchVO") DataUploadVO dataUploadVO
+			, HttpServletRequest request
+			, HttpServletResponse response
+			, ModelMap model) throws Exception {
+
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			String message = URLEncoder.encode(egovMessageSource.getMessage("fail.common.login"),"UTF-8");
+			return "redirect:/uat/uia/egovLoginUsr.do?message=" + message + "&parentYn=N";
+		}
+
+		/** Left Menu List */
+		List<?> list_menulist = (List<?>) request.getAttribute("menuList");
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+		if(list_menulist == null) {
+			MenuManageVO menuManageVO = new MenuManageVO();
+			menuManageVO.setTmpId(user.getId());
+			list_menulist = menuManageService.selectMainMenuLeft(menuManageVO);
+		}
+		model.addAttribute("list_menulist", list_menulist);
+
+		userLogService.logInsertUserLog(user.getId(), "dateUploadList", "R", "");
+
+		return "egovframework/whms/bi/dataUpload/dataUploadList";
+	}
+
+	/** 데이터 Load (Ajax) */
+	@RequestMapping(value = "/whms/bi/dataUploadDataAjax.do")
+	public ModelAndView dataUploadDataAjax(@ModelAttribute("searchVO") DataUploadVO dataUploadVO) throws Exception {
+    	ModelAndView modelAndView = new ModelAndView();
+    	modelAndView.setViewName("jsonView");
+
+		try {
+			List<DataUploadVO> dataList = dataUploadService.selectDataList(dataUploadVO);
+			modelAndView.addObject("dataList", dataList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("dataList", null);
+		}
+
+		return modelAndView;
+	}
+
+	/** 데이터 Load (Ajax) */
+	@RequestMapping(value = "/whms/bi/dataUploadSaveAjax.do")
+	public ModelAndView dataUploadSaveAjax(@ModelAttribute("searchVO") DataUploadVO dataUploadVO,
+			HttpServletRequest request) throws Exception {
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+    	ModelAndView modelAndView = new ModelAndView();
+    	modelAndView.setViewName("jsonView");
+
+    	String result = "N";
+    	int totalLine = 0;
+    	int cnt = 0;
+    	String error = "";
+
+    	String dataVal = dataUploadVO.getDataVal();
+    	dataVal = dataVal.replaceAll("&quot;", "\"");
+
+    	JSONParser parser = new JSONParser();
+
+		try {
+			JSONArray array = new JSONArray();
+			Object obj = parser.parse(dataVal);
+			array = (JSONArray)obj;
+			if(array != null) {
+				totalLine = array.size();
+				String saveResult = dataUploadService.dataSave(array, dataUploadVO.getDataType());
+				if("Y".equals(saveResult)) {
+					result = "Y";
+					if("U".equals(dataUploadVO.getDataType())) {
+						userLogService.logInsertUserLog(user.getId(), "dateUploadList", "I", "bulk");
+					}
+				} else {
+					String[] split = saveResult.split(",");
+					cnt = Integer.parseInt(split[0]);
+					error = split[1];
+					result = "N";
+				}
+			} else {
+				result = "N";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = "N";
+		}
+
+		modelAndView.addObject("result", result);
+		modelAndView.addObject("totalLine", totalLine);
+		modelAndView.addObject("errorLine", cnt);
+		modelAndView.addObject("error", error);
+
+		return modelAndView;
+	}
+
+	/** 목록 및 페이징 */
+	@RequestMapping(value="/whms/bi/dataUploadListPop.do")
+	public String dataUploadListPop( @ModelAttribute("searchVO") DataUploadVO dataUploadVO
+			, HttpServletRequest request
+			, HttpServletResponse response
+			, ModelMap model) throws Exception {
+
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "egovframework/com/uat/uia/EgovLoginUsr";
+		}
+
+		return "egovframework/whms/bi/dataUpload/dataUploadListPop";
+	}
+
+}

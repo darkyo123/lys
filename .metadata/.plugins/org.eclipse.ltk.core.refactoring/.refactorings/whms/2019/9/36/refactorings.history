@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;whms/src/main/webapp/errorPage.jsp&apos; to &apos;errorPage_full.jsp&apos;" description="Rename resource &apos;errorPage.jsp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/webapp/errorPage.jsp" name="errorPage_full.jsp" stamp="1567648911097" updateReferences="true"/>
+</session>

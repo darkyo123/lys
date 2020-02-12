@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pressureMeasureInfoDAO">
+
+	<select id="selectPressureMeasureInfo" resultType="egovframework.whms.hi.pressureMeasureInfo.service.PressureMeasureInfoVO">
+		SELECT wum.USE_GRP_CD as useGrpCd,
+			wum.USR_ID as usrId, wum.SEX_SECD as sexSecd, wum.USR_NM as usrNm, wum.BIR_DT as birDt, wum.CONN_TELNO as connTelno,
+			SUBSTR(wum.SYS_RGS_DT,1,10) as sysRgsDt, DATE_FORMAT(wum.SYS_RGS_DT, '%Y%m%d %H:%i:%s') as sysRgsDtFull
+			FROM WHMS_USR_MST wum
+			WHERE 1=1
+			<if test='loginAuthorType == "U" '>
+				AND USE_GRP_CD = #{loginAuthorCd}
+			</if>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND ${searchCondition} LIKE concat('%', #{searchKeyword}, '%')
+			</if>
+    </select>
+
+	<select id="selectPressureInfoList" resultType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+		SELECT USE_GRP_CD as useGrpCd, USR_ID as usrId, DATE_FORMAT(CHK_DTM, '%Y-%m-%d %H:%i:%s') as chkDtm, 
+			DATE_FORMAT(CHK_DTM, '%Y') AS chkYear, DATE_FORMAT(CHK_DTM, '%m') AS chkMonth,
+			HYPCT_CT as hypctCt, HYPRX_CT as hyprxCt, PLS_CT as plsCt, 
+			CHK_SCU_YN as chkScuYn, HYP_RMK as hypRmk, USE_YN as useYn
+		FROM HYP_CHK_INF
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+    </select>
+
+	<select id="selectPressureInfoListFull" resultType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+		SELECT USE_GRP_CD as useGrpCd, USR_ID as usrId, DATE_FORMAT(CHK_DTM, '%Y-%m-%d %H:%i:%s') as chkDtm, 
+			HYPCT_CT as hypctCt, HYPRX_CT as hyprxCt, PLS_CT as plsCt
+		FROM HYP_CHK_INF
+    </select>
+
+	<select id="selectUserPressureFull" resultType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+		SELECT USE_GRP_CD as useGrpCd, USR_ID as usrId, DATE_FORMAT(LST_CHK_DT, '%Y-%m-%d %H:%i:%s') as chkDtm, 
+			HYPCT_CT as hypctCt, HYPRX_CT as hyprxCt, PLS_CT as plsCt
+		FROM WHMS_USR_MST
+    </select>
+
+	<select id="selectMonthList" resultType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+		SELECT 
+			DATE_FORMAT(m1, '%Y') as year_val,
+			DATE_FORMAT(m1, '%m') as month_val,
+			(SELECT COUNT(0) FROM HYP_CHK_INF 
+			WHERE USE_GRP_CD = #{useGrpCd}
+			AND USR_ID = #{usrId}
+			AND DATE_FORMAT(CHK_DTM, '%Y%m') = DATE_FORMAT(m1,'%Y%m')) as count_val,
+			IFNULL((SELECT AVG(HYPCT_CT) FROM HYP_CHK_INF 
+			WHERE USE_GRP_CD = #{useGrpCd}
+			AND USR_ID = #{usrId}
+			AND DATE_FORMAT(CHK_DTM, '%Y%m') = DATE_FORMAT(m1,'%Y%m')),0) as avgHypctCt,
+			IFNULL((SELECT AVG(HYPRX_CT) FROM HYP_CHK_INF 
+			WHERE USE_GRP_CD = #{useGrpCd}
+			AND USR_ID = #{usrId}
+			AND DATE_FORMAT(CHK_DTM, '%Y%m') = DATE_FORMAT(m1,'%Y%m')),0) as avgHyprxCt
+			FROM
+			(
+			SELECT 
+			(date_add(now(), interval-5 month)) 
+			+INTERVAL m MONTH as m1
+			FROM
+			(
+			SELECT @rownum:=@rownum+1 as m FROM
+			(SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) t1,
+			(SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) t2,
+			(SELECT @rownum:=-1) t0
+			) d1
+			) d2 
+			WHERE m1&lt;=sysdate()
+			ORDER BY m1
+    </select>
+
+	<select id="pressureInfoCheck" resultType="java.lang.String">
+		SELECT COUNT(0)
+		FROM HYP_CHK_INF
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+		AND DATE_FORMAT(CHK_DTM, '%Y-%m-%d') = DATE_FORMAT(#{chkDtm},  '%Y-%m-%d')
+    </select>
+
+	<insert id="doRegistPressure" parameterType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+            INSERT INTO HYP_CHK_INF 
+                (   USE_GRP_CD             ,
+                	USR_ID			  ,
+                    CHK_DTM           ,
+                    HYPCT_CT			,
+                    HYPRX_CT		,
+                    PLS_CT		,
+                    CHK_SCU_YN		,
+                    USE_YN		,
+                    SYS_RGS_DT		,
+                    RGS_ID		,
+                    SYS_UPD_DT		,
+                    UPD_ID
+				)
+            VALUES (
+                    #{useGrpCd}            ,
+                    #{usrId}            ,
+                    #{chkDtm}          ,
+                    #{hypctCt}          ,
+                    #{hyprxCt}          ,
+                    #{plsCt}          ,
+                    'Y'					,
+                    'Y'					,
+                    sysdate()          ,
+                    #{loginId}			,
+                    sysdate()          ,
+                    #{loginId}
+				)
+    </insert>
+
+	<update id="doUpdatePressure" parameterType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+            UPDATE HYP_CHK_INF
+            SET HYPCT_CT =  #{hypctCt}		,
+            HYPRX_CT = #{hyprxCt}		,
+            PLS_CT = #{plsCt}		,
+            SYS_UPD_DT	= sysdate()		,
+            UPD_ID = #{loginId}
+            WHERE USE_GRP_CD = #{useGrpCd}
+            AND USR_ID = #{usrId}
+            AND DATE_FORMAT(CHK_DTM, '%Y-%m-%d') = DATE_FORMAT(#{chkDtm},  '%Y-%m-%d') 
+    </update>
+
+	<update id="doUpdateUserPressure" parameterType="egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO">
+            UPDATE WHMS_USR_MST
+            SET HYPCT_CT =  #{hypctCt}		,
+            HYPRX_CT = #{hyprxCt}		,
+            PLS_CT = #{plsCt}		,
+            SYS_UPD_DT	= sysdate()		,
+            UPD_ID = #{loginId}
+            WHERE USE_GRP_CD = #{useGrpCd}
+            AND USR_ID = #{usrId}
+    </update>
+</mapper>

@@ -1,0 +1,96 @@
+﻿@charset "utf-8"; 
+
+@font-face {
+  font-family: 'CJ ONLYONE NEW body Light';
+  font-style: normal;
+  font-weight: 300;
+  src: local('CJ ONLYONE NEW body Light'), local('CJ ONLYONE NEW body-Light'), local('CJ ONLYONE NEW body Light');
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_body_Light.eot);
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_body_Light.eot?#iefix) format('embedded-opentype'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_body_Light.woff) format('woff'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_body_Light.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'CJ ONLYONE NEW body Regular';
+  font-style: normal;
+  font-weight: 400;
+  src: local('CJ ONLYONE NEW body Regular'), local('CJ ONLYONE NEW body-Regular'), local('CJ ONLYONE NEW body Regular');
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_body_Regular.eot);
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_body_Regular.eot?#iefix) format('embedded-opentype'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_body_Regular.woff) format('woff'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_body_Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'CJ ONLYONE NEW title Medium';
+  font-style: normal;
+  font-weight: 500;
+  src: local('CJ ONLYONE NEW title Medium'), local('CJ ONLYONE NEW title-Medium'), local('CJ ONLYONE NEW title Medium');
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_title_Medium.eot);
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_title_Medium.eot?#iefix) format('embedded-opentype'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_title_Medium.woff) format('woff'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_title_Medium.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'CJ ONLYONE NEW title Bold';
+  font-style: normal;
+  font-weight: 700;
+  src: local('CJ ONLYONE NEW title Bold'), local('CJ ONLYONE NEW title-Bold'), local('CJ ONLYONE NEW title Bold');
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_title_Bold.eot);
+  src: url(../../../fonts/font/CJ_ONLYONE_NEW_title_Bold.eot?#iefix) format('embedded-opentype'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_title_Bold.woff) format('woff'),
+       url(../../../fonts/font/CJ_ONLYONE_NEW_title_Bold.ttf) format('truetype');
+}
+
+/* Reset */
+html, body {height:100%;-webkit-text-size-adjust:none;font-family:'CJ ONLYONE NEW body Light','돋음',dotum,sans-serif;font-size:15px;color:#333;font-style:normal}
+body, input, select, button, textarea, h1, h2, h3, h4, h5, h6, table {font-style:normal;font-size:12px;color:#444;font-family:'CJ ONLYONE NEW body Light', Malgun Gothic, '맑은 고딕', Dotum, AppleGothic, sans-serif !important;line-height:18px}
+html, body, div, span, form, input, select, button, textarea, legend, fieldset, h1, h2, h3, h4, h5, h6, ul, ol, dl, li, dt, dd, blockquote, address, p, th, td, caption {margin:0;padding:0;}
+ol, ul, li {list-style:none;}
+em {font-style:normal}
+img, fieldset {border:0 none;}
+img, span {vertical-align:middle}
+a:link, a:visited {text-decoration:none}
+a:hover, a:active {text-decoration:none}
+strong, h1, h2, h3, h4, h5, h6 {font-weight:normal}
+
+#wrap {margin:0 auto}
+#header h1 {height:140px;background:url(../../../images/egovframework/whms/logo_cj.png) no-repeat center center}
+#header h1 span {display:none}
+#content {padding:52px 0 0 0;text-align:center;background:#f5f5f5}
+.info_title {color:#222;font-size:34px;line-height:30px;font-family:'CJ ONLYONE NEW body Regular'}
+.info {color:#444;font-size:15px;line-height:24px;padding:19px 0 23px;}
+.contact {display:inline-block;color:#444;font-size:15px;line-height:24px;padding:22px 10px 44px;border-top:1px solid #cecece;*display:inline;zoom:1}
+.contact em {color:#de2037}
+.visual {width:542px;height:155px;margin:0 auto}
+.visual span {display:none}
+.btn_area {height:161px;background:#fff;padding-top:36px;text-align:center}
+.btn_home {display:inline-block;min-width:96px;height:48px;line-height:48px;color:#fff;font-size:15px;margin:0 4px;padding:0 30px;background:#de2037;border-radius:2px}
+.btn_prev {display:inline-block;min-width:96px;height:48px;line-height:48px;color:#fff;font-size:15px;margin:0 4px;padding:0 30px;background:#575757;border-radius:2px}
+.copyright {text-align:center;font-size:11px;color:#777;padding-top:70px}
+
+.cjWebPolicy {height:46px !important;width:206px !important;border:1px solid #575757;background:#fff;margin:0 2px !important;background:#fff url('ico_select.png') no-repeat right center;border-radius:2px}
+.cjWebPolicy h2 {height:46px !important;width:190px !important;padding-left:18px !important;border:0 none !important}
+.cjWebPolicy h2 a {height:46px !important;line-height:44px;color:#575757 !important;font-size:15px !important;font-family:'CJ ONLYONE NEW body Light' !important}
+.cjWebPolicy ul {width:206px !important;left:-1px !important;bottom:-1px !important;border:1px solid #575757 !important}
+.cjWebPolicy ul ul  {width:160px !important;border:0 none !important;margin-bottom:4px !important}
+.cjWebPolicy ul li {float:none !important;width:auto !important}
+.cjWebPolicy ul li li {padding-top:5px !important}
+.cjWebPolicy ul li p.title {font-style:normal !important;padding:5px 0 5px 5px !important;color:#575757 !important;font-size:15px !important;font-weight:normal !important;font-family:'CJ ONLYONE NEW body Regular' !important}
+.cjWebPolicy a {color:#575757 !important;font-size:13px !important;font-weight:normal !important;font-family:'CJ ONLYONE NEW body Light' !important}
+
+@media screen and (max-width:600px) {
+#header h1 {height:70px;background:url(../../../images/egovframework/whms/logo_cj.png) no-repeat center center;background-size:auto 45px}
+#content {padding:43px 0 0 0}
+.info_title {font-size:20px}
+.info {font-size:14px;line-height:1.5;padding:23px 0 44px}
+.info span {display:block}
+.info br {display:none}
+.contact {display:none}
+.cjWebPolicy {display:none !important}
+.btn_area {padding-top:20px}
+.btn_home {min-width:100px;height:36px;line-height:40px;font-size:16px;margin:0 4px;padding:0 15px}
+.btn_prev {min-width:100px;height:36px;line-height:40px;font-size:16px;margin:0 4px;padding:0 15px}
+}

@@ -1,0 +1,146 @@
+.needpopup-opened, .needpopup-opened body {
+	overflow:hidden
+}
+.needpopup-opened.needpopup-scrolled, .needpopup-opened.needpopup-scrolled body {
+	height:auto
+}
+.needpopup-opened.needpopup-scrolled body {
+	position:fixed;
+	width:100%
+}
+.needpopup_wrapper {
+	position:fixed;
+	z-index:999;
+	top:0;
+	left:0;
+	visibility:hidden;
+	overflow:auto;
+	-webkit-box-sizing:border-box;
+	box-sizing:border-box;
+	width:100%;
+	height:100%;
+	padding:40px 0;
+	-webkit-transition:opacity .3s ease;
+	transition:opacity .3s ease;
+	opacity:0;
+	background:#000;
+	background:rgba(0,0,0,.7)
+}
+.needpopup-opened .needpopup_wrapper {
+	visibility:visible;
+	filter:alpha(opacity=100);
+	-moz-opacity:1.0;
+	-khtml-opacity:1.0;
+	opacity:1.0;
+}
+
+.needpopup-overflow .needpopup_wrapper {
+	padding:10px
+}
+.needpopup {
+	position:relative;
+	z-index:9999;
+	top:50%;
+	left:50%;
+	display:none;
+	-webkit-box-sizing:border-box;
+	box-sizing:border-box;
+	width:100%;
+	max-width:100%;
+	margin-left:-50%;
+	padding:0px;
+	-webkit-transform:scale(.1, .1);
+	-ms-transform:scale(.1, .1);
+	transform:scale(.1, .1);
+	opacity:0;
+	background:#fff
+}
+.needpopup.opened {
+	-webkit-transition:opacity .5s ease, -webkit-transform .5s ease;
+	transition:opacity .5s ease, transform .5s ease;
+	-webkit-transform:scale(1, 1);
+	-ms-transform:scale(1, 1);
+	transform:scale(1, 1);
+	filter:alpha(opacity=100);
+	-moz-opacity:1.0;
+	-khtml-opacity:1.0;
+	opacity:1.0;
+	
+}
+.needpopup.stacked {
+	top:0!important;
+	margin-top:0!important
+}
+.needpopup-overflow .needpopup {
+	left:0;
+	width:auto;
+	margin-left:0
+}
+/* 로그인팝업 수정부분 */
+.needpopup {position:relative;border-radius: 0px;box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 1);}
+.needpopup p {margin: 0;}
+.needpopup p + p {margin-top: 10px;}
+.needpopup_remover {	
+	z-index:9999;
+	top:20px;right:20px;
+	text-align:right;
+	font-size:40px;
+	line-height:.5;
+	color:#fff;
+	text-decoration:none
+}
+.needpopup_remover:hover {color:#ccc}
+.needpopup_remover:before {content:'×'}
+.needpopup .needpopup_remover {position:absolute;z-index:9999;width:22px; height:22px; background: url(../img/btn_close_bl.png) no-repeat;top:15px;right:15px;font-size:0px;line-height:.5;color:#000;font-family: 'NotoSansKR';font-style: normal;font-weight:200;}
+.needpopup .needpopup_remover:hover {color:#fff; -moz-opacity:0.8;
+	-khtml-opacity:0.8;
+	opacity:0.8;}
+
+
+
+/* 모바일팝업 추가 */
+.needpopup01 {
+	position:relative;
+	z-index:9999;
+	top:50%;
+	left:50%;
+	display:none;
+	-webkit-box-sizing:border-box;
+	box-sizing:border-box;
+	width:600px;
+	max-width:100%;
+	margin-left:-300px;
+	padding:0px;
+	-webkit-transform:scale(.1, .1);
+	-ms-transform:scale(.1, .1);
+	transform:scale(.1, .1);
+	opacity:0;
+	background:#fff
+}
+.needpopup01.opened {
+	-webkit-transition:opacity .5s ease, -webkit-transform .5s ease;
+	transition:opacity .5s ease, transform .5s ease;
+	-webkit-transform:scale(1, 1);
+	-ms-transform:scale(1, 1);
+	transform:scale(1, 1);
+	filter:alpha(opacity=100);
+	-moz-opacity:1.0;
+	-khtml-opacity:1.0;
+	opacity:1.0;
+	
+}
+.needpopup01.stacked {
+	top:0!important;
+	margin-top:0!important
+}
+
+.needpopup01 {position:relative;border-radius: 0px;box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 1);}
+.needpopup01 p {margin: 0;}
+.needpopup01 p + p {margin-top: 10px;}
+
+.needpopup01 .needpopup_remover {position:absolute;z-index:9999;width:24px; height:23px; background: url(../img/btn_close_w.png) no-repeat;top:10px;right:10px;font-size:0px;line-height:.5;color:#000;font-family: 'NotoSansKR';font-style: normal;font-weight:200;}
+.needpopup01 .needpopup_remover:hover {color:#f1f1f1; -moz-opacity:0.8;
+	-khtml-opacity:0.8;
+	opacity:0.8;}
+
+

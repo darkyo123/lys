@@ -1,0 +1,119 @@
+package egovframework.whms.hi.pressureMeasureInfo.web;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.sym.log.ulg.service.EgovUserLogService;
+import egovframework.com.sym.mnu.mpm.service.EgovMenuManageService;
+import egovframework.com.sym.mnu.mpm.service.MenuManageVO;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.whms.hi.pressureMeasureInfo.service.PressureMeasureInfoService;
+import egovframework.whms.hi.pressureMeasureInfo.service.PressureMeasureInfoVO;
+
+@Controller
+public class PressureMeasureInfoController {
+
+	@Resource(name = "pressureMeasureInfoService")
+	private PressureMeasureInfoService pressureMeasureInfoService;
+
+	/** EgovMenuManageService */
+	@Resource(name = "meunManageService")
+    private EgovMenuManageService menuManageService;
+
+	/** EgovPropertyService */
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+
+	@Resource(name="EgovUserLogService")
+	private EgovUserLogService userLogService;
+
+	/** 목록 및 페이징 */
+	@RequestMapping(value="/whms/hi/pressureMeasureInfo.do")
+	public String basicMedInfo( @ModelAttribute("searchVO") PressureMeasureInfoVO pressureMeasureInfoVO
+			, HttpServletRequest request
+			, HttpServletResponse response
+			, ModelMap model) throws Exception {
+
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "egovframework/com/uat/uia/EgovLoginUsr";
+		}
+
+		/** Left Menu List */
+		List<?> list_menulist = (List<?>) request.getAttribute("menuList");
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+		if(list_menulist == null) {
+			MenuManageVO menuManageVO = new MenuManageVO();
+			menuManageVO.setTmpId(user.getId());
+			list_menulist = menuManageService.selectMainMenuLeft(menuManageVO);
+		}
+		model.addAttribute("list_menulist", list_menulist);
+
+		String paramId = EgovStringUtil.isNullToString(request.getParameter("paramId"));
+
+		if(!"".equals(paramId)) {
+			pressureMeasureInfoVO.setSearchCondition("USR_ID");
+			pressureMeasureInfoVO.setSearchKeyword(paramId);
+		}
+
+		model.addAttribute("monthList", pressureMeasureInfoService.selectMonthList());
+
+		if(pressureMeasureInfoVO.getSearchKeyword() != null && !"".equals(pressureMeasureInfoVO.getSearchKeyword())) {
+
+			pressureMeasureInfoVO.setLoginAuthorCd(user.getAuthorCd());
+			pressureMeasureInfoVO.setLoginAuthorType(user.getAuthorType());
+
+			model.addAttribute("detailVO", pressureMeasureInfoService.selectPressureMeasureInfo(pressureMeasureInfoVO));
+			userLogService.logInsertUserLog(user.getId(), "pressureMeasureInfo", "R", "");
+		}
+
+		return "egovframework/whms/hi/pressureMeasureInfo/pressureMeasureInfo";
+	}
+
+	@ResponseBody
+	@RequestMapping(value="/whms/hi/pressureMeasureConvert.do")
+	public String pressureMeasureConvert( @ModelAttribute("searchVO") PressureMeasureInfoVO pressureMeasureInfoVO
+			, HttpServletRequest request
+			, HttpServletResponse response
+			, ModelMap model) throws Exception {
+
+		try {
+			pressureMeasureInfoService.pressureMeasureConvert();
+			return "true";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "false";
+		}
+
+	}
+
+	@ResponseBody
+	@RequestMapping(value="/whms/hi/basicMedInfoConvert.do")
+	public String basicMedInfoConvert( @ModelAttribute("searchVO") PressureMeasureInfoVO pressureMeasureInfoVO
+			, HttpServletRequest request
+			, HttpServletResponse response
+			, ModelMap model) throws Exception {
+
+		try {
+			pressureMeasureInfoService.basicMedInfoConvert();
+			return "true";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "false";
+		}
+
+	}
+
+}

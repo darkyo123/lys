@@ -1,0 +1,368 @@
+package egovframework.whms.bi.dataUpload.service.impl;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.springframework.stereotype.Service;
+
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.utl.fcc.service.CryptoUtil;
+import egovframework.com.utl.fcc.service.EgovDateUtil;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import egovframework.whms.bi.dataUpload.service.DataUploadService;
+import egovframework.whms.bi.dataUpload.service.DataUploadVO;
+import egovframework.whms.bi.userManage.service.UserManageVO;
+import egovframework.whms.bi.userManage.service.impl.UserManageDAO;
+import egovframework.whms.hi.eduHistoryInfo.service.EduHistoryInfoVO;
+import egovframework.whms.hi.healthMedInfo.service.HealthMedInfoVO;
+import egovframework.whms.hi.qslt.service.impl.QsltDAO;
+
+@Service("dataUploadService")
+public class DataUploadServiceImpl extends EgovAbstractServiceImpl implements DataUploadService {
+
+	@Resource(name="dataUploadDAO")
+	private DataUploadDAO dataUploadDAO;
+
+	@Resource(name="usrManageDAO")
+	private UserManageDAO userManageDAO;
+
+	@Resource(name="qsltDAO")
+	private QsltDAO qsltDAO;
+
+	public List<DataUploadVO> selectDataList(DataUploadVO dataUploadVO) throws Exception {
+		return dataUploadDAO.selectDataList(dataUploadVO);
+	}
+
+	public String dataSave(JSONArray array, String dataType) throws Exception {
+
+		String result = "";
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+		int arraySize = 0;
+
+		if(array != null && array.size() > 0) {
+			arraySize = array.size();
+			for(int i=0; i<arraySize; i++) {
+				JSONObject obj = (JSONObject) array.get(i);
+				switch(dataType) {
+					case "U" :
+						UserManageVO umv = new UserManageVO();
+						String useGrpCd = EgovStringUtil.isNullToString(obj.get("0"));
+						//String useGrpNm = EgovStringUtil.isNullToString(obj.get("1"));
+						String usrNm = EgovStringUtil.isNullToString(obj.get("2"));
+						//String usrId = EgovStringUtil.isNullToString(obj.get("3"));
+						String usrId = qsltDAO.selectNewUsrId();
+						String sexVal = EgovStringUtil.isNullToString(obj.get("3"));
+						String birDt = EgovStringUtil.isNullToString(obj.get("4"));
+						String connTelno = EgovStringUtil.isNullToString(obj.get("5"));
+						String entryDt = EgovStringUtil.isNullToString(obj.get("6"));
+						String dutyDy = EgovStringUtil.isNullToString(obj.get("7"));
+						String contDutyDy = EgovStringUtil.isNullToString(obj.get("8"));
+						String ngcnDutyDy = EgovStringUtil.isNullToString(obj.get("9"));
+						String highDgrCd = EgovStringUtil.isNullToString(obj.get("10"));
+						String medYn = EgovStringUtil.isNullToString(obj.get("11"));
+						String eduDt = EgovStringUtil.isNullToString(obj.get("12"));
+						String eduCptYn = EgovStringUtil.isNullToString(obj.get("13"));
+
+						if(usrNm.contains("&lt;span")) usrNm = EgovStringUtil.wijmoTagRemove(usrNm);
+						if(highDgrCd.contains("&lt;span")) highDgrCd = EgovStringUtil.wijmoTagRemove(highDgrCd);
+
+						birDt = EgovDateUtil.wijmoConvertDate(birDt);
+						entryDt = EgovDateUtil.wijmoConvertDate(entryDt);
+						eduDt = EgovDateUtil.wijmoConvertDate(eduDt);
+
+						com.ibm.icu.text.SimpleDateFormat format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(birDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "생년월일 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						try {
+							format.parse(entryDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "입사일자 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						try {
+							format.parse(eduDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "교육일자 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+
+						CryptoUtil util = new CryptoUtil();
+						String masterKey = util.encryptSHA256(usrId);
+						//usrNm = EgovStringUtil.isNullToString(util.encryptAES128(masterKey, usrNm));
+						birDt = EgovStringUtil.isNullToString(util.encryptAES128(masterKey, birDt));
+						connTelno = EgovStringUtil.isNullToString(util.encryptAES128(masterKey, connTelno));
+
+						umv.setUseGrpCd(useGrpCd.replaceAll("&apos;", ""));
+						umv.setUsrNm(usrNm);
+						umv.setUsrId(usrId);
+						umv.setSexSecd(sexVal.equals("남자") ? "01" : "02");
+						umv.setBirDt(birDt);
+						umv.setConnTelno(connTelno.replaceAll("-", ""));
+						umv.setEntryDt(entryDt);
+						umv.setDutyDy(dutyDy);
+						umv.setContDutyDy(contDutyDy);
+						umv.setNgcnDutyDy(ngcnDutyDy);
+						umv.setHighDgrCd(highDgrCd);
+						umv.setMedYn(medYn);
+						umv.setEduDt(eduDt);
+						umv.setEduCptYn(eduCptYn);
+						umv.setLoginUsrId(user.getId());
+						if("".equals(useGrpCd) || "".equals(usrId)) {
+							// 필수항목 비었을 경우
+							result = (i+1) + "," + "필수 항목 데이터가 비어있습니다.";
+							return result;
+						}
+						int cnt = dataUploadDAO.doCheckUser(umv);
+						umv.setCodeNm("PlanCD");
+						umv.setCodeVal(highDgrCd);
+						int cnt1 = dataUploadDAO.doCheckCode(umv);
+						if(cnt1 == 0) {
+							result = (i+1) + "," + "고위험구분 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						if(cnt == 0) {
+							try {
+								dataUploadDAO.doSaveUser(umv);
+							} catch(Exception e) {
+								e.printStackTrace();
+								result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+								return result;
+							}
+						} else {
+							result = (i+1) + "," + "User가 존재합니다";
+							return result;
+						}
+						result = "Y";
+					break;
+					case "H" :
+
+						String meckuNm = EgovStringUtil.isNullToString(obj.get("0"));
+						String rtychkYn = EgovStringUtil.isNullToString(obj.get("1"));
+						String harmNm = EgovStringUtil.isNullToString(obj.get("2"));
+						String diagDt = EgovStringUtil.isNullToString(obj.get("3"));
+						String usrId2 = EgovStringUtil.isNullToString(obj.get("4"));
+						String diagInstNm = EgovStringUtil.isNullToString(obj.get("5"));
+						String nxtdDt = EgovStringUtil.isNullToString(obj.get("6"));
+						String merstRmk = EgovStringUtil.isNullToString(obj.get("7"));
+						String dcviwHisNm = EgovStringUtil.isNullToString(obj.get("8"));
+						String dcviwCtlRmk = EgovStringUtil.isNullToString(obj.get("9"));
+						String brdevlYn = EgovStringUtil.isNullToString(obj.get("10"));
+
+						if(meckuNm.contains("&lt;span")) meckuNm = EgovStringUtil.wijmoTagRemove(meckuNm);
+						if(harmNm.contains("&lt;span")) harmNm = EgovStringUtil.wijmoTagRemove(harmNm);
+						if(diagInstNm.contains("&lt;span")) diagInstNm = EgovStringUtil.wijmoTagRemove(diagInstNm);
+						if(merstRmk.contains("&lt;span")) merstRmk = EgovStringUtil.wijmoTagRemove(merstRmk);
+						if(dcviwHisNm.contains("&lt;span")) dcviwHisNm = EgovStringUtil.wijmoTagRemove(dcviwHisNm);
+						if(dcviwCtlRmk.contains("&lt;span")) dcviwCtlRmk = EgovStringUtil.wijmoTagRemove(dcviwCtlRmk);
+
+						diagDt = EgovDateUtil.wijmoConvertDate(diagDt);
+						nxtdDt = EgovDateUtil.wijmoConvertDate(nxtdDt);
+
+						format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(diagDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "진단일자 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						
+						format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(nxtdDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "차회 검진 기한 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+
+						usrId2 = usrId2.replaceAll("&apos;", "");
+
+						UserManageVO paramVO = new UserManageVO();
+						paramVO.setUsrId(usrId2);
+						UserManageVO userVO = userManageDAO.selectData(paramVO);
+
+						if("".equals(meckuNm) || "".equals(rtychkYn) || "".equals(harmNm) || "".equals(diagDt) || "".equals(brdevlYn)  ) {
+							// 필수항목 비었을 경우
+							result = (i+1) + "," + "필수 항목 데이터가 비어있습니다.";
+							return result;
+						}
+
+						if(userVO == null) {
+							result = (i+1) + "," + "User ID에 해당하는 사용자가 없습니다";
+							return result;
+						} else {
+							HealthMedInfoVO vo = new HealthMedInfoVO();
+							vo.setUseGrpCd(userVO.getUseGrpCd());
+							vo.setUsrId(usrId2);
+							vo.setMakeDt(EgovDateUtil.getToday());
+							vo.setMeckuNm(meckuNm);
+							vo.setRtychkYn(rtychkYn);
+							vo.setHarmNm(harmNm);
+							vo.setDiagDt(diagDt);
+							vo.setDiagInstNm(diagInstNm);
+							vo.setNxtdDt(nxtdDt);
+							vo.setMerstRmk(merstRmk);
+							vo.setDcviwHisNm(dcviwHisNm);
+							vo.setDcviwCtlRmk(dcviwCtlRmk);
+							vo.setBrdevlYn(brdevlYn);
+							vo.setLoginId(user.getId());
+							int cnt2 = dataUploadDAO.doCheckHealthInfo(vo);
+							paramVO.setCodeNm("MeckuCD");
+							paramVO.setCodeVal(meckuNm);
+							int cnt3 = dataUploadDAO.doCheckCode(paramVO);
+							if(cnt3 == 0) {
+								result = (i+1) + "," + "검진종류 데이터 형식이 일치하지 않습니다.";
+								return result;
+							}
+							if(cnt2 == 0) {
+								try {
+									dataUploadDAO.doRegistHealthInfo(vo);
+								} catch(Exception e) {
+									e.printStackTrace();
+									result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+									return result;
+								}
+							} else {
+								try {
+									dataUploadDAO.doUpdateHealthInfo(vo);
+								} catch(Exception e) {
+									e.printStackTrace();
+									result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+									return result;
+								}
+							}
+						}
+						result = "Y";
+					break;
+					case "E" :
+
+						String eduDtVal = EgovStringUtil.isNullToString(obj.get("0"));
+						String eduKindNm = EgovStringUtil.isNullToString(obj.get("1"));
+						String eduNm = EgovStringUtil.isNullToString(obj.get("2"));
+						//String companyNm = EgovStringUtil.isNullToString(obj.get("3"));
+						String usrId3 = EgovStringUtil.isNullToString(obj.get("3"));
+						String eduDy = EgovStringUtil.isNullToString(obj.get("4"));
+						String eduStrDt = EgovStringUtil.isNullToString(obj.get("5"));
+						String eduEndDt = EgovStringUtil.isNullToString(obj.get("6"));
+						String eduCptYnVal = EgovStringUtil.isNullToString(obj.get("7"));
+						String eduTechNm = EgovStringUtil.isNullToString(obj.get("8"));
+						String eduTechQual = EgovStringUtil.isNullToString(obj.get("9"));
+
+						if(eduKindNm.contains("&lt;span")) eduKindNm = EgovStringUtil.wijmoTagRemove(eduKindNm);
+						if(eduNm.contains("&lt;span")) eduNm = EgovStringUtil.wijmoTagRemove(eduNm);
+						if(eduDy.contains("&lt;span")) eduDy = EgovStringUtil.wijmoTagRemove(eduDy);
+						if(eduTechNm.contains("&lt;span")) eduTechNm = EgovStringUtil.wijmoTagRemove(eduTechNm);
+						if(eduTechQual.contains("&lt;span")) eduTechQual = EgovStringUtil.wijmoTagRemove(eduTechQual);
+
+						eduDtVal = EgovDateUtil.wijmoConvertDate(eduDtVal);
+						eduStrDt = EgovDateUtil.wijmoConvertDate(eduStrDt);
+						eduEndDt = EgovDateUtil.wijmoConvertDate(eduEndDt);
+
+						format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(eduDtVal);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "교육일자 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(eduStrDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "교육 시작일 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+						format = new com.ibm.icu.text.SimpleDateFormat("yyyy-MM-dd");
+						try {
+							format.parse(eduEndDt);
+						} catch (Exception e) {
+							e.printStackTrace();
+							result = (i+1) + "," + "교육 종료일 데이터 형식이 일치하지 않습니다.";
+							return result;
+						}
+
+						usrId3 = usrId3.replaceAll("&apos;", "");
+
+						UserManageVO paramVO2 = new UserManageVO();
+						paramVO2.setUsrId(usrId3);
+						UserManageVO userVO2 = userManageDAO.selectData(paramVO2);
+
+						if("".equals(eduDtVal) || "".equals(eduStrDt) || "".equals(eduEndDt)) {
+							// 필수항목 비었을 경우
+							result = (i+1) + "," + "필수 항목 데이터가 비어있습니다.";
+							return result;
+						}
+
+						if(userVO2 == null) {
+							result = (i+1) + "," + "User ID에 해당하는 사용자가 없습니다";
+							return result;
+						} else {
+							EduHistoryInfoVO vo = new EduHistoryInfoVO();
+							vo.setUseGrpCd(userVO2.getUseGrpCd());
+							vo.setUsrId(usrId3);
+							vo.setEduDt(eduDtVal);
+							vo.setEduKindNm(eduKindNm);
+							vo.setEduNm(eduNm);
+							vo.setEduDy(eduDy);
+							vo.setEduStrDt(eduStrDt);
+							vo.setEduEndDt(eduEndDt);
+							vo.setEduCptYn(eduCptYnVal);
+							vo.setEduTechNm(eduTechNm);
+							vo.setEduTechQual(eduTechQual);
+							vo.setLoginId(user.getId());
+
+							try {
+								dataUploadDAO.doRegistEduInfo(vo);
+							} catch(Exception e) {
+								e.printStackTrace();
+								result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+								return result;
+							}
+
+							/*int cnt2 = dataUploadDAO.doCheckEduInfo(vo);
+							if(cnt2 == 0) {
+								try {
+									dataUploadDAO.doRegistEduInfo(vo);
+								} catch(Exception e) {
+									e.printStackTrace();
+									result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+									return result;
+								}
+							} else {
+								try {
+									dataUploadDAO.doUpdateEduInfo(vo);
+								} catch(Exception e) {
+									e.printStackTrace();
+									result = (i+1) + "," + "엑셀 업로드 중 데이터 오류가 발생했습니다.";
+									return result;
+								}
+							}*/
+						}
+						result = "Y";
+					break;
+					default : 
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	
+
+}

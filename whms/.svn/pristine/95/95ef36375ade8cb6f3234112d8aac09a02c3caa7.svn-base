@@ -1,0 +1,315 @@
+package egovframework.whms.bi.userDetailManage.service.impl;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import egovframework.com.utl.fcc.service.CryptoUtil;
+import egovframework.com.utl.fcc.service.EgovDateUtil;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import egovframework.whms.bi.userDetailManage.service.UserDetailManageService;
+import egovframework.whms.bi.userDetailManage.service.UserDetailManageVO;
+import egovframework.whms.hi.pressureMeasureInfo.service.PressureInfoVO;
+import egovframework.whms.hi.pressureMeasureInfo.service.impl.PressureMeasureInfoDAO;
+
+@Service("userDetailManageService")
+public class UserDetailManageServiceImpl extends EgovAbstractServiceImpl implements UserDetailManageService {
+
+	@Resource(name="userDetailManageDAO")
+	private UserDetailManageDAO userDetailManageDAO;
+
+	@Resource(name="pressureMeasureInfoDAO")
+	private PressureMeasureInfoDAO pressureMeasureInfoDAO;
+
+	public UserDetailManageVO selectUserDetailManage(UserDetailManageVO userDetailManageVO) throws Exception {
+		try {
+			UserDetailManageVO detailVO = userDetailManageDAO.selectUserDetailManage(userDetailManageVO);
+			if(detailVO != null) {
+				CryptoUtil util = new CryptoUtil();
+				String healthId = detailVO.getUsrId();
+				String masterKey = util.encryptSHA256(healthId);
+
+				//String decryptData1 = util.decryptAES128(masterKey, detailVO.getUsrNm()) == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm());
+				//String decryptData2 = util.decryptAES128(masterKey, detailVO.getConnTelno()) == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno());
+				String decryptData3 = detailVO.getBirDt() == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt());
+
+	//			if(!"".equals(decryptData2)) {
+	//				if(decryptData2.length() == 10) {
+	//					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,6) + "-" + decryptData2.substring(6, 10);
+	//				}
+	//				if(decryptData2.length() == 11) {
+	//					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,7) + "-" + decryptData2.substring(7, 11);
+	//				}
+	//			}
+		
+				if(!"".equals(decryptData3)) {
+					if(decryptData3.length() == 8) {
+						decryptData3 = decryptData3.substring(0,4) + "-" + decryptData3.substring(4,6) + "-" + decryptData3.substring(6, 8);
+					}
+				}
+	
+				//detailVO.setUsrNm(decryptData1);
+				//detailVO.setConnTelno(decryptData2);
+				detailVO.setBirDt(decryptData3);
+
+				String decrypt1 = detailVO.getHypctCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getHypctCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getHypctCt());
+				String decrypt2 = detailVO.getHyprxCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getHyprxCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getHyprxCt());
+				String decrypt3 = detailVO.getPlsCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getPlsCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getPlsCt());
+
+				detailVO.setMaxHypctCt(decrypt1);
+				detailVO.setMaxHyprxCt(decrypt2);
+				detailVO.setMaxPlsCt(decrypt3);
+
+				UserDetailManageVO qsltVO = userDetailManageDAO.selectDetailQslt(detailVO);
+				qsltVO.setHypctCt(decrypt1);
+				qsltVO.setHyprxCt(decrypt2);
+				qsltVO.setPlsCt(decrypt3);
+				qsltVO = setYnValues(qsltVO);
+				detailVO.setHighDgrCdInfo(qsltVO.getHighDgrCdInfo());
+
+				detailVO.setPageIndex(userDetailManageVO.getPageIndex());
+				detailVO.setPageUnit(userDetailManageVO.getPageUnit());
+				List<UserDetailManageVO> detailList = userDetailManageDAO.selectDetailList(detailVO);
+				List<UserDetailManageVO> dcviwList = userDetailManageDAO.selectDcviwList(detailVO);
+
+				if(detailList != null && detailList.size() > 0) {
+					for(int i=0; i<detailList.size(); i++) {
+						UserDetailManageVO innerVO = detailList.get(i);
+
+						String decryptData4 = innerVO.getHypctCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getHypctCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getHypctCt());
+						String decryptData5 = innerVO.getHyprxCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getHyprxCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getHyprxCt());
+						String decryptData6 = innerVO.getPlsCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getPlsCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getPlsCt());
+
+						innerVO.setHypctCt(decryptData4);
+						innerVO.setHyprxCt(decryptData5);
+						innerVO.setPlsCt(decryptData6);
+
+						innerVO = this.setYnValues(innerVO);
+						String listDt = innerVO.getListDt();
+						for(int j=0; j<dcviwList.size(); j++) {
+							UserDetailManageVO dcviwVO = dcviwList.get(j);
+							if(listDt.contentEquals(dcviwVO.getDcviwDt())) {
+								innerVO.setBigo(dcviwVO.getDcviwDesc());
+							}
+						}
+					}
+				}
+
+				detailVO.setDetailList(detailList);
+				detailVO.setTotCnt(userDetailManageDAO.selectDetailListCnt(detailVO) == null ? "0" : userDetailManageDAO.selectDetailListCnt(detailVO));
+
+			}
+			return detailVO;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private UserDetailManageVO setYnValues( UserDetailManageVO vo ) throws Exception {
+
+		String highDgrCd = null;
+		String dcviwYn = "N";
+
+		if("Y".equals(vo.getHavdis8Yn()) || "Y".equals(vo.getHavdis4Yn()) || "Y".equals(vo.getHavdis5Yn())) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getHavdis1Yn()) || "Y".equals(vo.getHavdis2Yn()) || "Y".equals(vo.getHavdis3Yn()) || "Y".equals(vo.getHavdis4Yn())
+			||	"Y".equals(vo.getHavdis5Yn()) || "Y".equals(vo.getHavdis6Yn()) || "Y".equals(vo.getHavdis7Yn()) || "Y".equals(vo.getHavdis8Yn())) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getMoaci1Yn()) || "Y".equals(vo.getMoaci2Yn()) || "Y".equals(vo.getMoaci3Yn()) || "Y".equals(vo.getMoaci4Yn())
+				||	"Y".equals(vo.getMoaci5Yn()) || "Y".equals(vo.getMoaci6Yn()) || "Y".equals(vo.getMoaci7Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getWkpn1Yn()) || "Y".equals(vo.getWkpn2Yn()) || "Y".equals(vo.getWkpn3Yn()) || "Y".equals(vo.getWkpn4Yn())
+				||	"Y".equals(vo.getWkpn5Yn()) || "Y".equals(vo.getWkpn6Yn()) || "Y".equals(vo.getWkpn7Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getRepsym1Yn()) || "Y".equals(vo.getRepsym4Yn()) ) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getRepsym1Yn()) || "Y".equals(vo.getRepsym2Yn()) || "Y".equals(vo.getRepsym3Yn())  || "Y".equals(vo.getRepsym4Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getCirsym1Yn())) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getCirsym1Yn()) || "Y".equals(vo.getCirsym2Yn()) || "Y".equals(vo.getCirsym3Yn()) 
+				|| "Y".equals(vo.getCirsym4Yn()) ||	"Y".equals(vo.getCirsym5Yn()) ||	"Y".equals(vo.getCirsym6Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		String qsltYn = "";
+		String pressureLv = "";
+
+		if("21".equals(highDgrCd)) {
+			vo.setHighDgrCd("21");
+			qsltYn = "Y";
+
+			String hypctCt = vo.getHypctCt() == null || "".contentEquals(vo.getHypctCt()) ? "0" : vo.getHypctCt();
+			String hyprxCt = vo.getHyprxCt() == null || "".contentEquals(vo.getHyprxCt()) ? "0" : vo.getHyprxCt();
+
+			if(Double.valueOf(hypctCt) >= 160
+					|| Double.valueOf(hyprxCt) >= 100 ) {
+				pressureLv = "1";
+			} else if(Double.valueOf(hypctCt) >= 150
+					|| Double.valueOf(hyprxCt) >= 95 ) {
+				pressureLv = "2";
+			} else if(Double.valueOf(hypctCt) >= 140
+					|| Double.valueOf(hyprxCt) >= 90 ) {
+				pressureLv = "3";
+			} else if(Double.valueOf(hypctCt) < 140
+					|| Double.valueOf(hyprxCt) < 90 ) {
+				pressureLv = "4";
+			}
+
+		} else {
+			qsltYn = "N";
+			String hypctCt = vo.getHypctCt() == null || "".contentEquals(vo.getHypctCt()) ? "0" : vo.getHypctCt();
+			String hyprxCt = vo.getHyprxCt() == null || "".contentEquals(vo.getHyprxCt()) ? "0" : vo.getHyprxCt();
+
+			if(Double.valueOf(hypctCt) >= 160
+					|| Double.valueOf(hyprxCt) >= 100 ) {
+				vo.setHighDgrCd("21");
+				pressureLv = "1";
+			} else if(Double.valueOf(hypctCt) >= 150
+					|| Double.valueOf(hyprxCt) >= 95 ) {
+				vo.setHighDgrCd("22");
+				pressureLv = "2";
+			} else if(Double.valueOf(hypctCt) >= 140
+					|| Double.valueOf(hyprxCt) >= 90 ) {
+				vo.setHighDgrCd("23");
+				pressureLv = "3";
+			} else if(Double.valueOf(hypctCt) < 140
+					|| Double.valueOf(hyprxCt) < 90 ) {
+				vo.setHighDgrCd("24");
+				pressureLv = "4";
+			}
+		}
+
+		vo.setHighDgrNm(vo.getHighDgrCd() == null ? null : userDetailManageDAO.getHighDgrNm(vo));
+		vo.setDcviwYn(dcviwYn);
+		vo.setHighDgrCdInfo(qsltYn.concat(",").concat(pressureLv));
+
+		return vo;
+	}
+
+	@Override
+	public void doUpdageHighDgrCd(UserDetailManageVO userDetailManageVO) throws Exception {
+		userDetailManageDAO.doUpdateHighDgrCd(userDetailManageVO);
+	}
+
+	@Override
+	public void doRegistPressureInfo(UserDetailManageVO userDetailManageVO) throws Exception {
+
+		CryptoUtil util = new CryptoUtil();
+		String healthId = userDetailManageVO.getUsrId();
+		String masterKey = util.encryptSHA256(healthId);
+
+		String lstChkDt = EgovStringUtil.isNullToString(userDetailManageVO.getLstChkDt());
+		String highVal = userDetailManageVO.getHypctCt();
+		String lowVal = userDetailManageVO.getHyprxCt();
+		String pulseVal = userDetailManageVO.getPlsCt();
+
+		Date now = new Date(); // java.util.Date, NOT java.sql.Date or java.sql.Timestamp!
+		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentDtm = f.format(now);
+
+		if("".equals(lstChkDt)) {			// 최종측정일이 없을 경우 입력 값 저장
+
+			String encVal_high = util.encryptAES128(masterKey, highVal) == null ? "" : util.encryptAES128(masterKey, highVal);
+    		String encVal_low = util.encryptAES128(masterKey, lowVal) == null ? "" : util.encryptAES128(masterKey, lowVal);
+    		String encVal_pulse = util.encryptAES128(masterKey, pulseVal) == null ? "" : util.encryptAES128(masterKey, pulseVal);
+
+    		PressureInfoVO pressureVO = new PressureInfoVO();
+			pressureVO.setLoginId(userDetailManageVO.getLoginId());
+			pressureVO.setUseGrpCd(userDetailManageVO.getUseGrpCd());
+			pressureVO.setUsrId(userDetailManageVO.getUsrId());
+			pressureVO.setChkDtm(currentDtm);
+
+			pressureVO.setHypctCt(encVal_high);
+			pressureVO.setHyprxCt(encVal_low);
+			pressureVO.setPlsCt(encVal_pulse);
+
+			UserDetailManageVO qsltVO = userDetailManageDAO.selectDetailQslt(userDetailManageVO);
+			qsltVO.setHypctCt(highVal);
+			qsltVO.setHyprxCt(lowVal);
+			qsltVO.setPlsCt(pulseVal);
+			qsltVO = setYnValues(qsltVO);
+
+			userDetailManageVO.setHypctCt(encVal_high);
+    		userDetailManageVO.setHyprxCt(encVal_low);
+    		userDetailManageVO.setPlsCt(encVal_pulse);
+    		userDetailManageVO.setLstChkDt(currentDtm);
+    		userDetailManageVO.setHighDgrCd(qsltVO.getHighDgrCd());
+
+    		pressureMeasureInfoDAO.doRegistPressure(pressureVO);
+    		// 고위험군 체크
+    		userDetailManageDAO.doUpdatePressureInfo(userDetailManageVO);
+		} else {					// 최종 측정일이 있을 경우 새 값
+
+			String currentDate = currentDtm;
+			PressureInfoVO pressureVO = new PressureInfoVO();
+			pressureVO.setLoginId(userDetailManageVO.getLoginId());
+			pressureVO.setUseGrpCd(userDetailManageVO.getUseGrpCd());
+			pressureVO.setUsrId(userDetailManageVO.getUsrId());
+
+    		String encVal_high = util.encryptAES128(masterKey, highVal) == null ? "" : util.encryptAES128(masterKey, highVal);
+    		String encVal_low = util.encryptAES128(masterKey, lowVal) == null ? "" : util.encryptAES128(masterKey, lowVal);
+    		String encVal_pulse = util.encryptAES128(masterKey, pulseVal) == null ? "" : util.encryptAES128(masterKey, pulseVal);
+
+			pressureVO.setHypctCt(encVal_high);
+			pressureVO.setHyprxCt(encVal_low);
+			pressureVO.setPlsCt(encVal_pulse);
+			pressureVO.setChkDtm(currentDate);
+
+			Date lastDate = f.parse(lstChkDt);
+			long diff = now.getTime() - lastDate.getTime();
+
+			if(diff > 0) {			// 방금 측정한게 아니면
+
+				UserDetailManageVO qsltVO = userDetailManageDAO.selectDetailQslt(userDetailManageVO);
+				qsltVO.setHypctCt(highVal);
+				qsltVO.setHyprxCt(lowVal);
+				qsltVO.setPlsCt(pulseVal);
+				qsltVO = setYnValues(qsltVO);
+
+				userDetailManageVO.setHypctCt(encVal_high);
+	    		userDetailManageVO.setHyprxCt(encVal_low);
+	    		userDetailManageVO.setPlsCt(encVal_pulse);
+	    		userDetailManageVO.setLstChkDt(currentDate);
+	    		userDetailManageVO.setHighDgrCd(qsltVO.getHighDgrCd());
+
+				pressureMeasureInfoDAO.doRegistPressure(pressureVO);
+				// 고위험군 체크
+				userDetailManageDAO.doUpdatePressureInfo(userDetailManageVO);
+			}
+
+		}
+
+	}
+
+	@Override
+	public void doRegistDcviwDesc(UserDetailManageVO userDetailManageVO) throws Exception {
+		String checkVal = userDetailManageDAO.checkDcviwDesc(userDetailManageVO);
+		if("0".contentEquals(checkVal)) {
+			userDetailManageDAO.doRegistDcviwDesc(userDetailManageVO);
+		} else {
+			userDetailManageDAO.doUpdateDcviwDesc(userDetailManageVO);
+		}
+	}
+
+}

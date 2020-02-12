@@ -1,0 +1,204 @@
+package egovframework.whms.bi.userManage.service.impl;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import egovframework.com.utl.fcc.service.CryptoUtil;
+import egovframework.com.utl.fcc.service.EgovDateUtil;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import egovframework.whms.bi.userManage.service.UserManageService;
+import egovframework.whms.bi.userManage.service.UserManageVO;
+
+@Service("usrManageService")
+public class UserManageServiceImpl extends EgovAbstractServiceImpl implements UserManageService {
+
+	@Resource(name="usrManageDAO")
+	private UserManageDAO userManageDAO;
+
+	public List<UserManageVO> selectDataList(UserManageVO userManageVO) throws Exception {
+
+		List<UserManageVO> list = userManageDAO.selectDataList(userManageVO);
+
+		CryptoUtil util = new CryptoUtil();
+
+		if(list != null && list.size() > 0) {
+			for(int i=0; i<list.size(); i++) {
+				UserManageVO vo = list.get(i);
+				String healthId = vo.getUsrId();
+				String masterKey = util.encryptSHA256(healthId);
+
+				//String decryptData1 = "";
+				String decryptData2 = "";
+				String decryptData3 = "";
+
+				try {
+					//decryptData1 = vo.getUsrNm() == null ? "" : util.decryptAES128(masterKey, vo.getUsrNm());
+					decryptData2 = vo.getConnTelno() == null || "".equals(vo.getConnTelno()) ? "" : util.decryptAES128(masterKey, vo.getConnTelno());
+					decryptData3 = vo.getBirDt() == null || "".equals(vo.getBirDt()) ? "" : util.decryptAES128(masterKey, vo.getBirDt());
+				} catch (Exception e) {
+					//decryptData1 = "";
+					decryptData2 = "";
+					decryptData3 = "";
+				}
+
+				if(!"".equals(decryptData2) && decryptData2 != null) {
+					if(decryptData2.length() == 10) {
+						decryptData2 = decryptData2.substring(0,3).concat("-").concat(decryptData2.substring(3,4)).concat("**-***").concat(decryptData2.substring(9, 10));
+					}
+					if(decryptData2.length() == 11) {
+						decryptData2 = decryptData2.substring(0,3).concat("-").concat(decryptData2.substring(3,4)).concat("**-***").concat(decryptData2.substring(10, 11));
+					}
+				}
+
+				if(!"".equals(decryptData3) && decryptData3 != null) {
+					if(decryptData3.length() == 8) {
+						decryptData3 = decryptData3.substring(0,1).concat("***-*").concat(decryptData3.substring(5,6)).concat("-*").concat(decryptData3.substring(7, 8));
+					}
+				}
+
+				//vo.setUsrNm(decryptData1);
+				vo.setConnTelno(decryptData2);
+				vo.setBirDt(decryptData3);
+
+				String decryptData4 = vo.getHypctCt() == null ? "0" : util.decryptAES128(masterKey, vo.getHypctCt()) == null ? "0" : util.decryptAES128(masterKey, vo.getHypctCt());
+				String decryptData5 = vo.getHyprxCt() == null ? "0" : util.decryptAES128(masterKey, vo.getHyprxCt()) == null ? "0" : util.decryptAES128(masterKey, vo.getHyprxCt());
+				String decryptData6 = vo.getPlsCt() == null ? "0" : util.decryptAES128(masterKey, vo.getPlsCt()) == null ? "0" : util.decryptAES128(masterKey, vo.getPlsCt());
+
+				vo.setHypctCt(decryptData4);
+				vo.setHyprxCt(decryptData5);
+				vo.setPlsCt(decryptData6);
+
+				String makeDt = vo.getMakeDt();
+				String lstChkDt = vo.getLstChkDt();
+				String highDgrCd = vo.getHighDgrCd();
+
+				if(lstChkDt != null && !"".equals(lstChkDt)) {
+					if("21".equals(highDgrCd)) {
+						vo.setNextChkDt(lstChkDt);
+					} else if("22".equals(highDgrCd)) {
+						String nextDate = EgovDateUtil.addDay(lstChkDt, 7);
+						vo.setNextChkDt(EgovDateUtil.formatDate(nextDate, "-"));
+					} else if("23".equals(highDgrCd)) {
+						String nextDate = EgovDateUtil.addDay(lstChkDt, 14);
+						vo.setNextChkDt(EgovDateUtil.formatDate(nextDate, "-"));
+					} else if("24".equals(highDgrCd)) {
+						String nextDate = EgovDateUtil.addDay(lstChkDt, 30*6);
+						vo.setNextChkDt(EgovDateUtil.formatDate(nextDate, "-"));
+					} else {
+						String nextDate = EgovDateUtil.addDay(lstChkDt, 30*6);
+						vo.setNextChkDt(EgovDateUtil.formatDate(nextDate, "-"));
+					}
+				}
+
+				if(makeDt != null && !"".equals(makeDt)) {
+					if("21".equals(highDgrCd)) {
+						vo.setNextMakeDt(makeDt);
+					} else {
+						String nextDate = EgovDateUtil.addDay(makeDt, 30*6);
+						vo.setNextMakeDt(EgovDateUtil.formatDate(nextDate, "-"));
+					}
+				}
+
+			}
+		}
+
+		return list;
+	}
+
+	public List<UserManageVO> selectUseGrpCdList(UserManageVO userManageVO) throws Exception {
+		return userManageDAO.selectUseGrpCdList(userManageVO);
+	}
+
+	public UserManageVO selectData(UserManageVO userManageVO) throws Exception {
+		CryptoUtil util = new CryptoUtil();
+		UserManageVO data = userManageDAO.selectData(userManageVO);
+		String healthId = userManageVO.getUsrId();
+		String masterKey = util.encryptSHA256(healthId);
+
+		if(data != null) {
+			//String decryptData1 = "";
+			String decryptData2 = "";
+			String decryptData3 = "";
+	
+			try {
+				//decryptData1 = vo.getUsrNm() == null ? "" : util.decryptAES128(masterKey, vo.getUsrNm());
+				decryptData2 = data.getConnTelno() == null || "".equals(data.getConnTelno()) ? "" : util.decryptAES128(masterKey, data.getConnTelno());
+				decryptData3 = data.getBirDt() == null || "".equals(data.getBirDt()) ? "" : util.decryptAES128(masterKey, data.getBirDt());
+			} catch (Exception e) {
+				//decryptData1 = "";
+				decryptData2 = "";
+				decryptData3 = "";
+			}
+	
+			if(!"".equals(decryptData2) && decryptData2 != null) {
+				if(decryptData2.length() == 10) {
+					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,6) + "-" + decryptData2.substring(6, 10);
+				}
+				if(decryptData2.length() == 11) {
+					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,7) + "-" + decryptData2.substring(7, 11);
+				}
+			}
+	
+			if(!"".equals(decryptData3) && decryptData3 != null) {
+				if(decryptData3.length() == 8) {
+					decryptData3 = decryptData3.substring(0,4) + "-" + decryptData3.substring(4,6) + "-" + decryptData3.substring(6, 8);
+				}
+			}
+	
+			//vo.setUsrNm(decryptData1);
+			data.setConnTelno(decryptData2);
+			data.setBirDt(decryptData3);
+		}
+		return data;
+	}
+
+	public void doDelete(UserManageVO userManageVO) throws Exception {
+		String testGrpCd = userManageVO.getUseGrpCd();
+		String testIdx = userManageVO.getUsrId();
+		if(testIdx != null) {
+			String[] grpCds = testGrpCd.split(",");
+			String[] idxs = testIdx.split(",");
+			if(idxs.length == 1) {
+				userManageDAO.doDelete(userManageVO);				
+			} else {
+				for(int i=0; i<idxs.length; i++) {
+					userManageVO.setUseGrpCd(grpCds[i]);
+					userManageVO.setUsrId(idxs[i]);
+					userManageDAO.doDelete(userManageVO);					
+				}
+			}
+		}
+	}
+
+	public void doSave(UserManageVO userManageVO) throws Exception {
+		String flag = userManageVO.getFlag();
+		if(flag != null) {
+			if("I".equals(flag)) {
+				userManageDAO.doRegist(userManageVO);
+			} else {
+				userManageDAO.doUpdate(userManageVO);
+			}
+		}
+	}
+	
+	public void doRegist(UserManageVO userManageVO) throws Exception {
+		userManageDAO.doRegist(userManageVO);
+	}
+
+	public void doUpdate(UserManageVO userManageVO) throws Exception {
+		userManageDAO.doUpdate(userManageVO);
+	}
+
+	public void doUpdateHighDgrCd(UserManageVO userManageVO) throws Exception {
+		userManageDAO.doUpdateHighDgrCd(userManageVO);
+	}
+
+	/** 문진표 신규 작성 팝업에서 사용하는 사용자 정보 수정 */
+	public void doUpdatePopup(UserManageVO userManageVO) throws Exception {
+		userManageDAO.doUpdatePopup(userManageVO);
+	}
+
+}

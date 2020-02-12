@@ -1,0 +1,50 @@
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link type="text/css" rel="stylesheet" href="<c:url value='/css/egovframework/whms/style.css' />">
+<link type="text/css" rel="stylesheet" href="<c:url value='/css/egovframework/whms/reset.css' />">
+<link type="text/css" rel="stylesheet" href="<c:url value='/css/egovframework/whms/animate.css' />">
+<title><spring:message code="comSymMnuMpm.main_bottom.mainBottomTitle"/></title><!-- 아래메인 -->
+</head>
+<script>
+function actionLogout()
+{
+	document.selectFooter.action = "<c:url value='/uat/uia/actionLogout.do'/>";
+	document.selectFooter.target = "_top";
+	document.selectFooter.submit();
+	//top.document.location.href = "<c:url value='/j_spring_security_logout'/>";
+}
+
+$("html").keydown(function(e) {
+	var k = window.event.keyCode;
+	if(window.event.ctrlKey && k == 85) {
+		alert("소스보기가 금지 되어있습니다");
+		event.keyCode = 0;
+		event.cancleBubble = true;
+		event.returnValue = false;
+	}
+});
+
+</script>
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight= "0" oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+<form name="selectFooter">
+</form>
+<div class="footer">
+	<div class="footer_wrap">
+		<div class="ip">이전 로그인 IP<span><c:out value='${loginVO.lastLoginIp}'/></span></div>
+		<div class="date">이전 로그인 일시<span><c:out value='${loginVO.lastLoginDate}'/></span></div>
+		<div class="mem"><c:out value='${loginVO.name}'/></div>
+		<div class="id_num">ID<span><c:out value='${loginVO.id}'/></span></div>
+		<div class="logout">
+			<a href="javascript:actionLogout();">로그아웃</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

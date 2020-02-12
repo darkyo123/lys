@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="batchDAO">
+
+	<update id="initLockCount">
+        UPDATE COMTNEMPLYRINFO 
+		SET LOCK_CNT = null
+		WHERE LOCK_AT IS NULL OR LOCK_AT = 'N'
+    </update>
+
+</mapper>

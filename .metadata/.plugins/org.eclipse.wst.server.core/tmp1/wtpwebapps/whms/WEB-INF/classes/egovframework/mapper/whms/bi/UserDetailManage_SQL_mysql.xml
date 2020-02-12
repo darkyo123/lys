@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userDetailManageDAO">
+
+	<select id="selectUserDetailManage" resultType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		SELECT wum.USE_GRP_CD as useGrpCd,
+			(SELECT AUTHOR_NM FROM COMTNAUTHORINFO WHERE AUTHOR_CODE = wum.USE_GRP_CD) AS useGrpNm,
+			wum.USR_ID as usrId, wum.SEX_SECD as sexSecd, wum.USR_NM as usrNm,
+			wum.ENTRY_DT as entryDt, wum.BEG_CD as begCd, wum.BIR_DT as birDt, SUBSTR(LST_CHK_DT,1,19) as lstChkDt,
+			wum.HYPCT_CT as hypctCt, wum.HYPRX_CT as hyprxCt, wum.PLS_CT as plsCt,
+			DATE_FORMAT(wum.SYS_RGS_DT, '%Y%m%d %H:%i:%s') as sysRgsDt, wum.HIGH_DGR_CD as highDgrCd,
+			(SELECT DTL_CD_NM FROM WHMS_COD_INF
+			WHERE REPT_CD = 'PlanCD'
+			AND DTL_CD = wum.HIGH_DGR_CD) as highDgrNm
+			FROM WHMS_USR_MST wum
+			WHERE 1=1
+			<if test='loginAuthorType == "U" '>
+				AND USE_GRP_CD = #{loginAuthorCd}
+			</if>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND ${searchCondition} LIKE concat('%', #{searchKeyword}, '%')
+				<if test="paramGrpCd != null and paramGrpCd != ''">
+					AND USE_GRP_CD = #{paramGrpCd}
+				</if>
+			</if>
+    </select>
+
+	<select id="selectDetailList" resultType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		SELECT listDt, USE_GRP_CD, USR_ID,
+			HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+			MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+			WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+			REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+			CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN,
+			HYPCT_CT, HYPRX_CT, PLS_CT, QSLT_YN
+		FROM (
+			SELECT listDt, USE_GRP_CD, USR_ID,
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN,
+				HYPCT_CT, HYPRX_CT, PLS_CT, QSLT_YN
+			FROM (
+				SELECT MAKE_DT as listDt, hqi.USE_GRP_CD, hqi.USR_ID,
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN,
+				HYPCT_CT, HYPRX_CT, PLS_CT, 'Y' AS QSLT_YN
+				FROM 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(MAKE_DT,1,19) AS MAKE_DT, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN
+				FROM HLTH_QSLT_INF
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hqi
+				LEFT OUTER JOIN 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(CHK_DTM,1,19) AS CHK_DTM, HYPCT_CT, HYPRX_CT, PLS_CT
+				FROM hyp_chk_inf
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hci
+				ON hqi.USE_GRP_CD = hci.USE_GRP_CD
+				AND hqi.USR_ID = hci.USR_ID
+				AND hqi.MAKE_DT = hci.CHK_DTM
+				UNION
+				SELECT CHK_DTM AS listDt,
+				hci.USE_GRP_CD,
+				hci.USR_ID, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN,
+				HYPCT_CT, HYPRX_CT, PLS_CT, IF(HAVDIS1_YN IS NULL, "N", "Y") AS QSLT_YN 
+				FROM 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(CHK_DTM,1,19) AS CHK_DTM, HYPCT_CT, HYPRX_CT, PLS_CT
+				FROM hyp_chk_inf
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hci
+				LEFT OUTER JOIN 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(MAKE_DT,1,19) AS MAKE_DT, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN
+				FROM HLTH_QSLT_INF
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hqi
+				ON hqi.USE_GRP_CD = hci.USE_GRP_CD
+				AND hqi.USR_ID = hci.USR_ID
+				AND hqi.MAKE_DT = hci.CHK_DTM 
+			) data
+			ORDER BY listDt DESC
+			LIMIT #{pageIndex}, #{pageUnit} ) data
+	</select>
+
+	<select id="selectDetailListCnt" resultType="String">
+		SELECT COUNT(listDt) as totCnt
+		FROM (
+			SELECT MAKE_DT as listDt
+			FROM (
+				SELECT USE_GRP_CD, USR_ID, SUBSTR(MAKE_DT,1,19) AS MAKE_DT, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN
+				FROM HLTH_QSLT_INF
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hqi
+				LEFT OUTER JOIN 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(CHK_DTM,1,19) AS CHK_DTM, HYPCT_CT, HYPRX_CT, PLS_CT
+				FROM hyp_chk_inf
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hci
+				ON hqi.USE_GRP_CD = hci.USE_GRP_CD
+				AND hqi.USR_ID = hci.USR_ID
+				AND hqi.MAKE_DT = hci.CHK_DTM
+			UNION
+			SELECT CHK_DTM AS listDt
+			FROM 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(CHK_DTM,1,19) AS CHK_DTM, HYPCT_CT, HYPRX_CT, PLS_CT
+				FROM hyp_chk_inf
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hci
+				LEFT OUTER JOIN 
+				(SELECT USE_GRP_CD, USR_ID, SUBSTR(MAKE_DT,1,19) AS MAKE_DT, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN
+				FROM HLTH_QSLT_INF
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}) hqi
+			ON hqi.USE_GRP_CD = hci.USE_GRP_CD
+			AND hqi.USR_ID = hci.USR_ID
+			AND hqi.MAKE_DT = hci.CHK_DTM 
+		) data
+	</select>
+
+	<select id="selectDetailQslt" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO" resultType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+			SELECT USE_GRP_CD, USR_ID, SUBSTR(MAKE_DT,1,19) AS MAKE_DT, 
+				HAVDIS1_YN, HAVDIS2_YN, HAVDIS3_YN, HAVDIS4_YN, HAVDIS5_YN, HAVDIS6_YN, HAVDIS7_YN, HAVDIS8_YN,
+				MOACI1_YN, MOACI2_YN, MOACI3_YN, MOACI4_YN, MOACI5_YN, MOACI6_YN, MOACI7_YN,
+				WKPN1_YN, WKPN2_YN, WKPN3_YN, WKPN4_YN, WKPN5_YN, WKPN6_YN, WKPN7_YN,
+				REPSYM1_YN, REPSYM2_YN, REPSYM3_YN, REPSYM4_YN, 
+				CIRSYM1_YN, CIRSYM2_YN, CIRSYM3_YN, CIRSYM4_YN, CIRSYM5_YN, CIRSYM6_YN
+				FROM HLTH_QSLT_INF hqi
+				WHERE USE_GRP_CD = #{useGrpCd}
+				AND USR_ID = #{usrId}
+				AND MAKE_DT = (SELECT MAX(MAKE_DT) FROM HLTH_QSLT_INF WHERE USE_GRP_CD = hqi.USE_GRP_CD AND USR_ID = hqi.USR_ID)
+	</select>
+
+	<select id="getHighDgrNm" resultType="String">
+		SELECT DTL_CD_NM 
+		FROM WHMS_COD_INF
+		WHERE REPT_CD = 'PlanCD'
+		AND DTL_CD = #{highDgrCd}
+	</select>
+
+	<update id="doUpdateHighDgrCd" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		UPDATE WHMS_USR_MST
+		SET HIGH_DGR_CD = #{highDgrCd},
+		SYS_UPD_DT = SYSDATE()
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+	</update>
+
+	<update id="doUpdatePressureInfo" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		UPDATE WHMS_USR_MST
+		SET HYPCT_CT = #{hypctCt},
+		HYPRX_CT = #{hyprxCt},
+		PLS_CT = #{plsCt},
+		LST_CHK_DT = #{lstChkDt},
+		HIGH_DGR_CD = #{highDgrCd}
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+	</update>
+
+	<select id="selectDcviwList" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO" resultType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		SELECT USE_GRP_CD as useGrpCd, USR_ID as usrId, SUBSTR(MAKE_DT,1,19) as dcviwDt, DCVIW_DESC as dcviwDesc
+		FROM DCVIW_HIS
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+		AND USE_YN = 'Y'
+	</select>
+
+	<select id="checkDcviwDesc" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO" resultType="String">
+		SELECT COUNT(MAKE_DT) 
+		FROM DCVIW_HIS
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+		AND MAKE_DT = #{dcviwDt}
+	</select>
+
+	<insert id="doRegistDcviwDesc" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		INSERT INTO DCVIW_HIS 
+                  ( USE_GRP_CD,
+					USR_ID,
+                    MAKE_DT,
+                    DCVIW_DESC,
+                    USE_YN,
+                    SYS_RGS_DT,
+                    RGS_ID,
+                    SYS_UPD_DT,
+                    UPD_ID )
+           VALUES ( #{useGrpCd},
+                    #{usrId},
+                    #{dcviwDt},
+                    #{dcviwDesc},
+                    'Y',
+                    SYSDATE(),
+                    #{loginId},
+                    SYSDATE(),
+                    #{loginId} )
+	</insert>
+
+	<update id="doUpdateDcviwDesc" parameterType="egovframework.whms.bi.userDetailManage.service.UserDetailManageVO">
+		UPDATE DCVIW_HIS
+		SET DCVIW_DESC = #{dcviwDesc},
+		SYS_UPD_DT = SYSDATE(),
+		UPD_ID = #{loginId}
+		WHERE USE_GRP_CD = #{useGrpCd}
+		AND USR_ID = #{usrId}
+		AND MAKE_DT = #{dcviwDt}
+		AND USE_YN = 'Y'
+	</update>
+
+</mapper>

@@ -1,0 +1,125 @@
+package egovframework.whms.hi.summary.service.impl;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import egovframework.com.utl.fcc.service.CryptoUtil;
+import egovframework.com.utl.fcc.service.EgovDateUtil;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import egovframework.whms.hi.summary.service.SummaryService;
+import egovframework.whms.hi.summary.service.SummaryVO;
+
+@Service("summaryService")
+public class SummaryServiceImpl extends EgovAbstractServiceImpl implements SummaryService {
+
+	@Resource(name="summaryDAO")
+	private SummaryDAO summaryDAO;
+
+	public SummaryVO selectSummaryInfo(SummaryVO summaryVO) throws Exception {
+
+		SummaryVO detailVO = summaryDAO.selectSummaryInfo(summaryVO);
+
+		if(detailVO != null) {
+			CryptoUtil util = new CryptoUtil();
+			String healthId = detailVO.getUsrId();
+			String masterKey = util.encryptSHA256(healthId);
+	
+			//String decryptData1 = detailVO.getUsrNm() == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm()) == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm());
+			String decryptData2 = detailVO.getConnTelno() == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno()) == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno());
+			String decryptData3 = detailVO.getBirDt() == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt());
+	
+			if(!"".equals(decryptData2)) {
+				if(decryptData2.length() == 10) {
+					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,6) + "-" + decryptData2.substring(6, 10);
+				}
+				if(decryptData2.length() == 11) {
+					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,7) + "-" + decryptData2.substring(7, 11);
+				}
+			}
+	
+			if(!"".equals(decryptData3)) {
+				if(decryptData3.length() == 8) {
+					decryptData3 = decryptData3.substring(0,4) + "-" + decryptData3.substring(4,6) + "-" + decryptData3.substring(6, 8);
+				}
+			}
+	
+			//detailVO.setUsrNm(decryptData1);
+			detailVO.setConnTelno(decryptData2);
+			detailVO.setBirDt(decryptData3);
+
+			if(summaryVO.getParamDtm() != null && !"".equals(summaryVO.getParamDtm())) {
+				detailVO.setParamDtm(summaryVO.getParamDtm());
+			}
+
+			SummaryVO pressureInfo = summaryDAO.selectPressureInfo(detailVO);
+			if(pressureInfo != null) {
+				String chkDtm = EgovStringUtil.isNullToString(pressureInfo.getChkDtm());
+				if(!"".equals(chkDtm)) {
+					long diffDay = EgovDateUtil.calcDiffDate(chkDtm);
+					detailVO.setLstPrgsDct(Long.toString(diffDay));
+				}
+				detailVO.setChkDtm(pressureInfo.getChkDtm());
+				detailVO.setChkDay(pressureInfo.getChkDay());
+				String decHigh = pressureInfo.getHypctCt() == null ? "" : util.decryptAES128(masterKey, pressureInfo.getHypctCt()) == null ? "" : util.decryptAES128(masterKey, pressureInfo.getHypctCt());
+				String decLow = pressureInfo.getHyprxCt() == null ? "" : util.decryptAES128(masterKey, pressureInfo.getHyprxCt()) == null ? "" : util.decryptAES128(masterKey, pressureInfo.getHyprxCt());
+				String decPlc = pressureInfo.getPlsCt() == null ? "" : util.decryptAES128(masterKey, pressureInfo.getPlsCt()) == null ? "" : util.decryptAES128(masterKey, pressureInfo.getPlsCt());
+				detailVO.setHypctCt(decHigh);
+				detailVO.setHyprxCt(decLow);
+				detailVO.setPlsCt(decPlc);
+				detailVO.setPrevDtm(pressureInfo.getPrevDtm());
+				detailVO.setNextDtm(pressureInfo.getNextDtm());
+			}
+
+			SummaryVO brdevlInfo = summaryDAO.selectBrdevlInfo(detailVO);
+			if(brdevlInfo != null) {
+				detailVO.setLstMedDt(brdevlInfo.getDiagDt());
+				detailVO.setBrdevlYn(brdevlInfo.getBrdevlYn());
+			} else {
+				detailVO.setBrdevlYn("N");
+			}
+
+		}
+
+		return detailVO;
+	}
+
+	public List<SummaryVO> selectUserList(SummaryVO summaryVO) throws Exception {
+		List<SummaryVO> resultList = summaryDAO.selectUserList(summaryVO);
+		if(resultList != null && resultList.size() > 0) {
+			for(SummaryVO detailVO : resultList) {
+				CryptoUtil util = new CryptoUtil();
+				String healthId = detailVO.getUsrId();
+				String masterKey = util.encryptSHA256(healthId);
+		
+				//String decryptData1 = detailVO.getUsrNm() == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm()) == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm());
+				String decryptData2 = detailVO.getConnTelno() == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno()) == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno());
+				String decryptData3 = detailVO.getBirDt() == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt());
+		
+				if(!"".equals(decryptData2)) {
+					if(decryptData2.length() == 10) {
+						decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,6) + "-" + decryptData2.substring(6, 10);
+					}
+					if(decryptData2.length() == 11) {
+						decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,7) + "-" + decryptData2.substring(7, 11);
+					}
+				}
+		
+				if(!"".equals(decryptData3)) {
+					if(decryptData3.length() == 8) {
+						decryptData3 = decryptData3.substring(0,4) + "-" + decryptData3.substring(4,6) + "-" + decryptData3.substring(6, 8);
+					}
+				}
+		
+				//detailVO.setUsrNm(decryptData1);
+				detailVO.setConnTelno(decryptData2);
+				detailVO.setBirDt(decryptData3);
+			}
+		}
+		return resultList;
+	}
+
+}

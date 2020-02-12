@@ -1,0 +1,269 @@
+package egovframework.whms.hi.consultHistory.service.impl;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import egovframework.com.utl.fcc.service.CryptoUtil;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import egovframework.whms.bi.userDetailManage.service.UserDetailManageVO;
+import egovframework.whms.bi.userDetailManage.service.impl.UserDetailManageDAO;
+import egovframework.whms.hi.consultHistory.service.ConsultHistoryService;
+
+@Service("consultHistoryService")
+public class ConsultHistoryServiceImpl extends EgovAbstractServiceImpl implements ConsultHistoryService {
+
+	/** log */
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConsultHistoryServiceImpl.class);
+
+	@Resource(name="consultHistoryDAO")
+	private ConsultHistoryDAO consultHistoryDAO;
+
+	@Resource(name="userDetailManageDAO")
+	private UserDetailManageDAO userDetailManageDAO;
+
+	public UserDetailManageVO selectConsultHistory(UserDetailManageVO userDetailManageVO) throws Exception {
+		UserDetailManageVO detailVO = userDetailManageDAO.selectUserDetailManage(userDetailManageVO);
+		try {
+			if(detailVO != null) {
+				CryptoUtil util = new CryptoUtil();
+				String healthId = detailVO.getUsrId();
+				String masterKey = util.encryptSHA256(healthId);
+
+				//String decryptData1 = util.decryptAES128(masterKey, detailVO.getUsrNm()) == null ? "" : util.decryptAES128(masterKey, detailVO.getUsrNm());
+				//String decryptData2 = util.decryptAES128(masterKey, detailVO.getConnTelno()) == null ? "" : util.decryptAES128(masterKey, detailVO.getConnTelno());
+				String decryptData3 = detailVO.getBirDt() == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getBirDt());
+
+	//			if(!"".equals(decryptData2)) {
+	//				if(decryptData2.length() == 10) {
+	//					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,6) + "-" + decryptData2.substring(6, 10);
+	//				}
+	//				if(decryptData2.length() == 11) {
+	//					decryptData2 = decryptData2.substring(0,3) + "-" + decryptData2.substring(3,7) + "-" + decryptData2.substring(7, 11);
+	//				}
+	//			}
+		
+				if(!"".equals(decryptData3)) {
+					if(decryptData3.length() == 8) {
+						decryptData3 = decryptData3.substring(0,4) + "-" + decryptData3.substring(4,6) + "-" + decryptData3.substring(6, 8);
+					}
+				}
+	
+				//detailVO.setUsrNm(decryptData1);
+				//detailVO.setConnTelno(decryptData2);
+				detailVO.setBirDt(decryptData3);
+
+				String decrypt1 = detailVO.getHypctCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getHypctCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getHypctCt());
+				String decrypt2 = detailVO.getHyprxCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getHyprxCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getHyprxCt());
+				String decrypt3 = detailVO.getPlsCt() == null ? "" : util.decryptAES128(masterKey, detailVO.getPlsCt()) == null ? "" : util.decryptAES128(masterKey, detailVO.getPlsCt());
+
+				detailVO.setMaxHypctCt(decrypt1);
+				detailVO.setMaxHyprxCt(decrypt2);
+				detailVO.setMaxPlsCt(decrypt3);
+
+				UserDetailManageVO qsltVO = userDetailManageDAO.selectDetailQslt(detailVO);
+				qsltVO.setHypctCt(decrypt1);
+				qsltVO.setHyprxCt(decrypt2);
+				qsltVO.setPlsCt(decrypt3);
+				qsltVO = decYnValues(qsltVO);
+				qsltVO = setYnValues(qsltVO);
+				detailVO.setHighDgrCdInfo(qsltVO.getHighDgrCdInfo());
+
+				detailVO.setPageIndex(userDetailManageVO.getPageIndex());
+				detailVO.setPageUnit(userDetailManageVO.getPageUnit());
+				List<UserDetailManageVO> detailList = userDetailManageDAO.selectDetailList(detailVO);
+				List<UserDetailManageVO> dcviwList = userDetailManageDAO.selectDcviwList(detailVO);
+
+				if(detailList != null && detailList.size() > 0) {
+					for(int i=0; i<detailList.size(); i++) {
+						UserDetailManageVO innerVO = detailList.get(i);
+
+						String decryptData4 = innerVO.getHypctCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getHypctCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getHypctCt());
+						String decryptData5 = innerVO.getHyprxCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getHyprxCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getHyprxCt());
+						String decryptData6 = innerVO.getPlsCt() == null ? "" : util.decryptAES128(masterKey, innerVO.getPlsCt()) == null ? "" : util.decryptAES128(masterKey, innerVO.getPlsCt());
+
+						innerVO.setHypctCt(decryptData4);
+						innerVO.setHyprxCt(decryptData5);
+						innerVO.setPlsCt(decryptData6);
+
+						innerVO = this.decYnValues(innerVO);
+						innerVO = this.setYnValues(innerVO);
+						String listDt = innerVO.getListDt();
+						for(int j=0; j<dcviwList.size(); j++) {
+							UserDetailManageVO dcviwVO = dcviwList.get(j);
+							if(listDt.contentEquals(dcviwVO.getDcviwDt())) {
+								innerVO.setBigo(dcviwVO.getDcviwDesc());
+							}
+						}
+					}
+				}
+
+				detailVO.setDetailList(detailList);
+				detailVO.setTotCnt(userDetailManageDAO.selectDetailListCnt(detailVO) == null ? "0" : userDetailManageDAO.selectDetailListCnt(detailVO));
+
+			}
+		} catch (Exception e) {
+			LOGGER.debug("consultHistory decrypt error");
+			//e.printStackTrace();
+		}
+		return detailVO;
+	}
+
+	private UserDetailManageVO decYnValues( UserDetailManageVO qsltVO ) throws Exception {
+		String UsrId = qsltVO.getUsrId();
+
+		CryptoUtil util = new CryptoUtil();
+		String masterKey = util.encryptSHA256(UsrId);	// 대칭키
+		qsltVO.setFahsYn(EgovStringUtil.isEmpty(qsltVO.getFahsYn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahsYn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahsYn()).substring(0,1));
+		qsltVO.setFahs1Yn(EgovStringUtil.isEmpty(qsltVO.getFahs1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs1Yn()).substring(0,1));
+		qsltVO.setFahs2Yn(EgovStringUtil.isEmpty(qsltVO.getFahs2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs2Yn()).substring(0,1));
+		qsltVO.setFahs3Yn(EgovStringUtil.isEmpty(qsltVO.getFahs3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs3Yn()).substring(0,1));
+		qsltVO.setFahs4Yn(EgovStringUtil.isEmpty(qsltVO.getFahs4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs4Yn()).substring(0,1));
+		qsltVO.setFahs5Yn(EgovStringUtil.isEmpty(qsltVO.getFahs5Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs5Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs5Yn()).substring(0,1));
+		qsltVO.setFahs6Yn(EgovStringUtil.isEmpty(qsltVO.getFahs6Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahs6Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahs6Yn()).substring(0,1));
+		qsltVO.setFahsEtc(EgovStringUtil.isEmpty(qsltVO.getFahsEtc()) ? "" : util.decryptAES128(masterKey, qsltVO.getFahsEtc()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getFahsEtc()));
+
+		qsltVO.setHavdisYn(EgovStringUtil.isEmpty(qsltVO.getHavdisYn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdisYn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdisYn()).substring(0,1));
+		qsltVO.setHavdis1Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis1Yn()).substring(0,1));
+		qsltVO.setHavdis2Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis2Yn()).substring(0,1));
+		qsltVO.setHavdis3Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis3Yn()).substring(0,1));
+		qsltVO.setHavdis4Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis4Yn()).substring(0,1));
+		qsltVO.setHavdis5Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis5Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis5Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis5Yn()).substring(0,1));
+		qsltVO.setHavdis6Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis6Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis6Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis6Yn()).substring(0,1));
+		qsltVO.setHavdis7Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis7Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis7Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis7Yn()).substring(0,1));
+		qsltVO.setHavdis8Yn(EgovStringUtil.isEmpty(qsltVO.getHavdis8Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis8Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdis8Yn()).substring(0,1));
+		qsltVO.setHavdisEtc(EgovStringUtil.isEmpty(qsltVO.getHavdisEtc()) ? "" : util.decryptAES128(masterKey, qsltVO.getHavdisEtc()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getHavdisEtc()));
+
+		qsltVO.setMoaci1Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci1Yn()).substring(0,1));
+		qsltVO.setMoaci2Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci2Yn()).substring(0,1));
+		qsltVO.setMoaci3Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci3Yn()).substring(0,1));
+		qsltVO.setMoaci4Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci4Yn()).substring(0,1));
+		qsltVO.setMoaci5Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci5Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci5Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci5Yn()).substring(0,1));
+		qsltVO.setMoaci6Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci6Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci6Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci6Yn()).substring(0,1));
+		qsltVO.setMoaci7Yn(EgovStringUtil.isEmpty(qsltVO.getMoaci7Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci7Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getMoaci7Yn()).substring(0,1));
+
+		qsltVO.setWkpn1Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn1Yn()).substring(0,1));
+		qsltVO.setWkpn2Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn2Yn()).substring(0,1));
+		qsltVO.setWkpn3Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn3Yn()).substring(0,1));
+		qsltVO.setWkpn4Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn4Yn()).substring(0,1));
+		qsltVO.setWkpn5Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn5Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn5Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn5Yn()).substring(0,1));
+		qsltVO.setWkpn6Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn6Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn6Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn6Yn()).substring(0,1));
+		qsltVO.setWkpn7Yn(EgovStringUtil.isEmpty(qsltVO.getWkpn7Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn7Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getWkpn7Yn()).substring(0,1));
+
+		qsltVO.setRepsym1Yn(EgovStringUtil.isEmpty(qsltVO.getRepsym1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym1Yn()).substring(0,1));
+		qsltVO.setRepsym2Yn(EgovStringUtil.isEmpty(qsltVO.getRepsym2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym2Yn()).substring(0,1));
+		qsltVO.setRepsym3Yn(EgovStringUtil.isEmpty(qsltVO.getRepsym3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym3Yn()).substring(0,1));
+		qsltVO.setRepsym4Yn(EgovStringUtil.isEmpty(qsltVO.getRepsym4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getRepsym4Yn()).substring(0,1));
+
+		qsltVO.setCirsym1Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym1Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym1Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym1Yn()).substring(0,1));
+		qsltVO.setCirsym2Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym2Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym2Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym2Yn()).substring(0,1));
+		qsltVO.setCirsym3Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym3Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym3Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym3Yn()).substring(0,1));
+		qsltVO.setCirsym4Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym4Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym4Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym4Yn()).substring(0,1));
+		qsltVO.setCirsym5Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym5Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym5Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym5Yn()).substring(0,1));
+		qsltVO.setCirsym6Yn(EgovStringUtil.isEmpty(qsltVO.getCirsym6Yn()) ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym6Yn()) == null ? "" : util.decryptAES128(masterKey, qsltVO.getCirsym6Yn()).substring(0,1));
+
+		return qsltVO;
+	}
+
+	private UserDetailManageVO setYnValues( UserDetailManageVO vo ) throws Exception {
+
+		String highDgrCd = null;
+		String dcviwYn = "N";
+
+		if("Y".equals(vo.getHavdis8Yn()) || "Y".equals(vo.getHavdis4Yn()) || "Y".equals(vo.getHavdis5Yn())) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getHavdis1Yn()) || "Y".equals(vo.getHavdis2Yn()) || "Y".equals(vo.getHavdis3Yn()) || "Y".equals(vo.getHavdis4Yn())
+			||	"Y".equals(vo.getHavdis5Yn()) || "Y".equals(vo.getHavdis6Yn()) || "Y".equals(vo.getHavdis7Yn()) || "Y".equals(vo.getHavdis8Yn())) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getMoaci1Yn()) || "Y".equals(vo.getMoaci2Yn()) || "Y".equals(vo.getMoaci3Yn()) || "Y".equals(vo.getMoaci4Yn())
+				||	"Y".equals(vo.getMoaci5Yn()) || "Y".equals(vo.getMoaci6Yn()) || "Y".equals(vo.getMoaci7Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getWkpn1Yn()) || "Y".equals(vo.getWkpn2Yn()) || "Y".equals(vo.getWkpn3Yn()) || "Y".equals(vo.getWkpn4Yn())
+				||	"Y".equals(vo.getWkpn5Yn()) || "Y".equals(vo.getWkpn6Yn()) || "Y".equals(vo.getWkpn7Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getRepsym1Yn()) || "Y".equals(vo.getRepsym4Yn()) ) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getRepsym1Yn()) || "Y".equals(vo.getRepsym2Yn()) || "Y".equals(vo.getRepsym3Yn())  || "Y".equals(vo.getRepsym4Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		if("Y".equals(vo.getCirsym1Yn())) {
+			highDgrCd = "21";
+		}
+
+		if("Y".equals(vo.getCirsym1Yn()) || "Y".equals(vo.getCirsym2Yn()) || "Y".equals(vo.getCirsym3Yn()) 
+				|| "Y".equals(vo.getCirsym4Yn()) ||	"Y".equals(vo.getCirsym5Yn()) ||	"Y".equals(vo.getCirsym6Yn()) ) {
+			dcviwYn = "Y";
+		}
+
+		String qsltYn = "";
+		String pressureLv = "";
+
+		if("21".equals(highDgrCd)) {
+			vo.setHighDgrCd("21");
+			qsltYn = "Y";
+
+			String hypctCt = vo.getHypctCt() == null || "".contentEquals(vo.getHypctCt()) ? "0" : vo.getHypctCt();
+			String hyprxCt = vo.getHyprxCt() == null || "".contentEquals(vo.getHyprxCt()) ? "0" : vo.getHyprxCt();
+
+			if(Double.valueOf(hypctCt) >= 160
+					|| Double.valueOf(hyprxCt) >= 100 ) {
+				pressureLv = "1";
+			} else if(Double.valueOf(hypctCt) >= 150
+					|| Double.valueOf(hyprxCt) >= 95 ) {
+				pressureLv = "2";
+			} else if(Double.valueOf(hypctCt) >= 140
+					|| Double.valueOf(hyprxCt) >= 90 ) {
+				pressureLv = "3";
+			} else if(Double.valueOf(hypctCt) < 140
+					|| Double.valueOf(hyprxCt) < 90 ) {
+				pressureLv = "4";
+			}
+
+		} else {
+			qsltYn = "N";
+			String hypctCt = vo.getHypctCt() == null || "".contentEquals(vo.getHypctCt()) ? "0" : vo.getHypctCt();
+			String hyprxCt = vo.getHyprxCt() == null || "".contentEquals(vo.getHyprxCt()) ? "0" : vo.getHyprxCt();
+
+			if(Double.valueOf(hypctCt) >= 160
+					|| Double.valueOf(hyprxCt) >= 100 ) {
+				vo.setHighDgrCd("21");
+				pressureLv = "1";
+			} else if(Double.valueOf(hypctCt) >= 150
+					|| Double.valueOf(hyprxCt) >= 95 ) {
+				vo.setHighDgrCd("22");
+				pressureLv = "2";
+			} else if(Double.valueOf(hypctCt) >= 140
+					|| Double.valueOf(hyprxCt) >= 90 ) {
+				vo.setHighDgrCd("23");
+				pressureLv = "3";
+			} else if(Double.valueOf(hypctCt) < 140
+					|| Double.valueOf(hyprxCt) < 90 ) {
+				vo.setHighDgrCd("24");
+				pressureLv = "4";
+			}
+		}
+
+		vo.setHighDgrNm(vo.getHighDgrCd() == null ? null : userDetailManageDAO.getHighDgrNm(vo));
+		vo.setDcviwYn(dcviwYn);
+		vo.setHighDgrCdInfo(qsltYn.concat(",").concat(pressureLv));
+
+		return vo;
+	}
+
+}

@@ -1,0 +1,134 @@
+package egovframework.whms.sys.hubManage.web;
+
+import java.net.URLEncoder;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import egovframework.com.cmm.EgovMessageSource;
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.sym.log.ulg.service.EgovUserLogService;
+import egovframework.com.sym.mnu.mpm.service.EgovMenuManageService;
+import egovframework.com.sym.mnu.mpm.service.MenuManageVO;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.whms.bi.userManage.service.UserManageService;
+import egovframework.whms.bi.userManage.service.UserManageVO;
+import egovframework.whms.sys.hubManage.service.HubManageService;
+import egovframework.whms.sys.hubManage.service.HubManageVO;
+
+@Controller
+public class HubManageController {
+
+	@Resource(name = "hubManageService")
+	private HubManageService hubManageService;
+
+	@Resource(name = "usrManageService")
+	private UserManageService userManageService;
+
+	/** EgovPropertyService */
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+
+	/** EgovMenuManageService */
+	@Resource(name = "meunManageService")
+    private EgovMenuManageService menuManageService;
+
+	@Resource(name="EgovUserLogService")
+	private EgovUserLogService userLogService;
+
+	/** EgovMessageSource */
+	@Resource(name = "egovMessageSource")
+	EgovMessageSource egovMessageSource;
+
+	/** log */
+	private static final Logger LOGGER = LoggerFactory.getLogger(HubManageController.class);
+
+	/** 목록 및 페이징 */
+	@RequestMapping(value = "/whms/sys/hubManageList.do")
+	public String HubManageList(@ModelAttribute("searchVO") HubManageVO hubManageVO, HttpServletRequest request,
+			HttpServletResponse response, ModelMap model) throws Exception {
+
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			String message = URLEncoder.encode(egovMessageSource.getMessage("fail.common.login"),"UTF-8");
+			return "redirect:/uat/uia/egovLoginUsr.do?message=" + message + "&parentYn=N";
+		}
+
+		/** Left Menu List */
+		List<?> list_menulist = (List<?>) request.getAttribute("menuList");
+		if(list_menulist == null) {
+			LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+			MenuManageVO menuManageVO = new MenuManageVO();
+			menuManageVO.setTmpId(user.getId());
+			list_menulist = menuManageService.selectMainMenuLeft(menuManageVO);
+		}
+		model.addAttribute("list_menulist", list_menulist);
+
+		/** 권한 List */
+		UserManageVO userManageVO = new UserManageVO();
+		model.addAttribute("useGrpCdList", userManageService.selectUseGrpCdList(userManageVO));
+
+		return "egovframework/whms/sys/hubManage/hubManageList";
+	}
+
+	/** 데이터 Load (Ajax) */
+	@RequestMapping(value = "/whms/sys/hubManageDataAjax.do")
+	public ModelAndView hubManageDataAjax(@ModelAttribute("searchVO") HubManageVO hubManageVO) throws Exception {
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("jsonView");
+
+		try {
+			hubManageVO.setLoginAuthorCd(user.getAuthorCd());
+			hubManageVO.setLoginAuthorType(user.getAuthorType());
+			List<HubManageVO> dataList = hubManageService.selectDataList(hubManageVO);
+			modelAndView.addObject("dataList", dataList);
+			userLogService.logInsertUserLog(user.getId(), "hubManageList", "R", "");
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("dataList", null);
+		}
+
+		return modelAndView;
+	}
+
+	/** 입력 & 수정 (Ajax) */
+	@RequestMapping(value = "/whms/sys/hubManageSaveAjax.do")
+	public ModelAndView testSaveAjax(@ModelAttribute("searchVO") HubManageVO hubManageVO) throws Exception {
+
+		LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("jsonView");
+
+		try {
+			hubManageVO.setLoginId(user.getId());
+			String result = hubManageService.doSave(hubManageVO);
+			if("Y".equals(result)) {
+				modelAndView.addObject("result", true);				
+			} else {
+				String[] split = result.split(",");
+				modelAndView.addObject("result", false);
+				if(split != null && split.length == 2) {
+					modelAndView.addObject("errorMsg", split[1]);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("result", false);
+		}
+
+		return modelAndView;
+	}
+
+}

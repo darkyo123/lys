@@ -1,0 +1,44 @@
+#Server Resource Monitoring #
+
+ultSysScm.mntrngServer.Title=Server Resource Monitoring
+
+ultSysScm.mntrngServerList.Title=Server Resource Monitoring
+ultSysScm.mntrngServerList.ServerName=server H/W \uba85
+
+ultSysScm.mntrngServerList.ServerId=server H/W ID
+ultSysScm.mntrngServerList.ServerIp=server H/W IP
+ultSysScm.mntrngServerList.ServerEmail=person E-Mail
+
+ultSysScm.mntrngServerList.btnLog=Log
+
+
+#Server Resource Monitoring Log List#
+ultSysScm.mntrngResrceServerList.Title=Server Resource Monitoring
+ultSysScm.mntrngResrceServerList.scServerName=server H/W Nm
+ultSysScm.mntrngResrceServerList.scBetween=between
+ultSysScm.mntrngResrceServerList.scFromDate=search start date
+ultSysScm.mntrngResrceServerList.scToDate=search start date
+
+ultSysScm.mntrngResrceServerList.listServerName=server H/W Nm
+ultSysScm.mntrngResrceServerList.listServerIp=server H/W IP
+ultSysScm.mntrngResrceServerList.listCpuUse=CPU use
+ultSysScm.mntrngResrceServerList.lisMemoryUse=memory use
+ultSysScm.mntrngResrceServerList.listServerStatus=service status
+ultSysScm.mntrngResrceServerList.listCreateDatetime=crate date
+
+ultSysScm.mntrngResrceServerList.validate.datatFail=\ub0a0\uc9dc \ud615\uc2dd\uc774 \uc798\ubabb\ub418\uc5c8\uc2b5\ub2c8\ub2e4!
+ultSysScm.mntrngResrceServerList.validate.datatCheck=\uc2dc\uc791\uc77c\uc790\ub294 \uc885\ub8cc\uc77c\uc790\ubcf4\ub2e4 \ud074 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4!
+
+#Server Resource Monitoring Log Detail#
+ultSysScm.mntrngServerDetail.Title=Server Resource Monitoring
+ultSysScm.mntrngServerDetail.logId=log ID
+ultSysScm.mntrngServerDetail.serverName=server H/W name
+ultSysScm.mntrngServerDetail.serverIp=server H/W IP
+ultSysScm.mntrngServerDetail.cpuUse=Cpu Use
+ultSysScm.mntrngServerDetail.memoryUse=memory use
+ultSysScm.mntrngServerDetail.serviceStatus=service status
+ultSysScm.mntrngServerDetail.logInfo=log info
+ultSysScm.mntrngServerDetail.crateDate=crate date
+
+
+

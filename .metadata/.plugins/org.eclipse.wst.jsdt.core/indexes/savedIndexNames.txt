@@ -1,0 +1,7 @@
+INDEX VERSION 1.4+D:\cNko\source\whms\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+2763231645.index
+2608340559.index
+2706639272.index
+2461196806.index
+1606769417.index
+2993741133.index

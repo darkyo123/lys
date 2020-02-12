@@ -1,0 +1,156 @@
+package egovframework.whms.sys.userInfo.web;
+
+import java.net.URLEncoder;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import egovframework.com.cmm.EgovMessageSource;
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.utl.fcc.service.EgovStringUtil;
+import egovframework.whms.sys.sysInfo.service.SysInfoVO;
+import egovframework.whms.sys.userInfo.service.UserInfoService;
+import egovframework.whms.sys.userInfo.service.UserInfoVO;
+
+@Controller
+public class UserInfoController {
+
+	@Resource(name = "userInfoService")
+	private UserInfoService userInfoService;
+
+	/** EgovMessageSource */
+	@Resource(name = "egovMessageSource")
+	EgovMessageSource egovMessageSource;
+
+	/** 사용자정보 페이지 조회 */
+	@RequestMapping(value = "/whms/sys/userInfo.do")
+	public String userInfo(@ModelAttribute("searchVO") SysInfoVO sysInfoVO, HttpServletRequest request,
+			HttpServletResponse response, ModelMap model) throws Exception {
+
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			String message = URLEncoder.encode(egovMessageSource.getMessage("fail.common.login"),"UTF-8");
+			return "redirect:/uat/uia/egovLoginUsr.do?message=" + message + "&parentYn=N";
+		}
+
+		/** Left Menu List */
+		model.addAttribute("list_menulist", request.getAttribute("menuList"));
+
+		return "egovframework/whms/sys/userInfo/userInfo";
+	}
+
+	/** 데이터 Load (Ajax) */
+	@RequestMapping(value = "/whms/sys/loginLogDataAjax.do")
+	public ModelAndView loginLogDataAjax(@ModelAttribute("searchVO") UserInfoVO searchVO) throws Exception {
+    	ModelAndView modelAndView = new ModelAndView();
+    	modelAndView.setViewName("jsonView");
+
+		try {
+
+			LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+
+			searchVO.setLoginId(user.getId());
+
+			String searchCondition = EgovStringUtil.isNullToString(searchVO.getSearchCondition());
+			String searchKeyword = EgovStringUtil.isNullToString(searchVO.getSearchKeyword());
+
+			if("LOGIN_TYPE".contentEquals(searchCondition)) {
+				searchVO.setSearchCondition("CONECT_MTHD");
+				if("login".equals(searchKeyword.toLowerCase())) {
+					searchVO.setSearchKeyword("I");
+				} 
+				if("logout".equals(searchKeyword.toLowerCase())) {
+					searchVO.setSearchKeyword("O");
+				}
+			}
+
+			List<UserInfoVO> dataList = userInfoService.selectDataList(searchVO);
+			modelAndView.addObject("dataList", dataList);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("dataList", null);
+		}
+
+		return modelAndView;
+	}
+
+	/** 사용자 패스워드 변경(Ajax) */
+	@RequestMapping(value = "/whms/sys/userPwdChangeAjax.do")
+	public ModelAndView userPwdChangeAjax(@ModelAttribute("searchVO") UserInfoVO searchVO) throws Exception {
+    	ModelAndView modelAndView = new ModelAndView();
+    	modelAndView.setViewName("jsonView");
+
+		try {
+
+			LoginVO user = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
+
+			if(user != null) {
+				searchVO.setLoginId(user.getId());
+			} else {
+				String userId = searchVO.getUserId();
+				if(userId != null) {
+					searchVO.setLoginId(userId);
+				}
+			}
+
+			String usrPwd = searchVO.getUserPw();
+			String usrPwdNew = searchVO.getUserPwNew();
+
+			byte[] devPwd = Base64.decodeBase64(usrPwd);
+			if(devPwd != null) {
+				searchVO.setUserPw(new String(devPwd));
+			}
+
+			devPwd = Base64.decodeBase64(usrPwdNew);
+			if(devPwd != null) {
+				searchVO.setUserPwNew(new String(devPwd));
+			}
+
+			String result = userInfoService.pwdChange(searchVO);
+
+			modelAndView.addObject("result", result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("result", null);
+		}
+
+		return modelAndView;
+	}
+
+	/** 사용자 패스워드 변경 */
+	@RequestMapping(value = "/whms/sys/userPwdUpd.do")
+	public ModelAndView userPwdUpd(@ModelAttribute("searchVO") UserInfoVO searchVO) throws Exception {
+    	ModelAndView modelAndView = new ModelAndView();
+    	modelAndView.setViewName("jsonView");
+
+		try {
+
+			searchVO.setLoginId(searchVO.getUserId());
+
+			searchVO.setUserPw("whms4321!");
+
+			String result = userInfoService.pwdChangeNew(searchVO);
+
+			modelAndView.addObject("result", result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelAndView.addObject("result", null);
+		}
+
+		return modelAndView;
+	}
+
+}
