@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="healthMedInfoDAO">
+
+	<select id="selectHealthMedInfo" resultType="egovframework.whms.hi.healthMedInfo.service.HealthMedInfoVO">
+		SELECT 
+		wum.USE_GRP_CD as useGrpCd, wum.USR_ID as usrId, wum.USR_NM as usrNm, wum.USR_AGE as usrAge, wum.SEX_SECD as sexSecd,
+		wum.BIR_DT as birDt, wum.CONN_TELNO as connTelno, SUBSTR(wum.SYS_RGS_DT,1,10) as sysRgsDt
+		FROM WHMS_USR_MST wum
+		WHERE 1=1
+		<if test='loginAuthorType == "U" '>
+			AND wum.USE_GRP_CD = #{loginAuthorCd}
+		</if>
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND ${searchCondition} LIKE concat('%', #{searchKeyword}, '%')
+		</if>
+    </select>
+
+	<select id="selectDataList" resultType="egovframework.whms.hi.healthMedInfo.service.HealthMedInfoVO">
+		SELECT 
+		mh.USE_GRP_CD as useGrpCd, mh.USR_ID as usrId, wum.USR_NM as usrNm, wum.USR_AGE as usrAge, wum.ENTRY_DT as entryDt, wum.SEX_SECD as sexSecd,
+		mh.MECKU_CD as meckuCd, (SELECT DTL_CD_NM FROM WHMS_COD_INF WHERE REPT_CD = 'MeckuCD' AND DTL_CD = mh.MECKU_CD) as meckuNm,
+		mh.HARM_NM as harmNm, mh.RTYCHK_YN as rtychkYn, mh.DIAG_DT as diagDt, mh.DIAG_INST_NM as diagInstNm, mh.NXTD_DT as nxtdDt, 
+		mh.MERST_RMK as merstRmk, mh.DCVIW_HIS_NM as dcviwHisNm, mh.DCVIW_CTL_RMK as dcviwCtlRmk, mh.BRDEVL_YN as brdevlYn,
+		SUBSTR(mh.MAKE_DT,1,10) as makeDt
+		FROM MECKU_HIS mh, WHMS_USR_MST wum
+		WHERE mh.USE_GRP_CD = wum.USE_GRP_CD
+		AND mh.USR_ID = wum.USR_ID
+		<if test='loginAuthorType == "U" '>
+			AND wum.USE_GRP_CD = #{loginAuthorCd}
+		</if>
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND wum.${searchCondition} LIKE concat('%', #{searchKeyword}, '%')
+		</if>
+    </select>
+
+	<update id="updateAdditionalData">
+		UPDATE MECKU_HIS 
+		SET TARGET_ORGAN_DAMAGE = #{targetOrganDamage} , 
+			DYSLIPIDEMIA1 = #{dyslipidemia1} , 
+			DYSLIPIDEMIA2 = #{dyslipidemia2} , 
+			SYS_UPD_DT = SYSDATE() ,
+			UPD_ID = #{loginId}   
+		WHERE USE_GRP_CD = #{useGrpCd} AND USR_ID = #{usrId} AND MAKE_DT = #{makeDt}
+    </update>
+
+
+</mapper>
