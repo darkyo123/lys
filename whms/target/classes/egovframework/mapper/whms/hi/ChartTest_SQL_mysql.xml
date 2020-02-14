@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chartTestDAO">
+
+	<select id="selectChartTest" resultType="egovframework.whms.hi.chartTest.service.ChartTestVO">
+		SELECT IFNULL(dat.USR_AGE, age.USR_AGE) AS USR_AGE, 
+		IFNULL(dat.HIGH_DGR_CD, age.HIGH_DGR_CD) AS HIGH_DGR_CD, 
+		IFNULL(dat.CNT, age.CNT) AS CNT
+		FROM 
+		( SELECT USR_AGE, HIGH_DGR_CD, CNT
+		FROM (
+		SELECT USR_AGE, HIGH_DGR_CD, COUNT(HIGH_DGR_CD) AS CNT
+		FROM (
+		SELECT FLOOR(IFNULL(USR_AGE,0)/10)*10 AS USR_AGE, HIGH_DGR_CD
+		FROM 
+		(
+		SELECT USE_GRP_CD, USR_ID, USR_AGE 
+		FROM hlth_qslt_inf
+		) hqi
+		JOIN 
+		(
+		SELECT USE_GRP_CD, USR_ID, HIGH_DGR_CD
+		FROM whms_usr_mst
+		) wum
+		ON hqi.USE_GRP_CD = wum.USE_GRP_CD
+		AND hqi.USR_ID = wum.USR_ID ) dat
+		GROUP BY USR_AGE, HIGH_DGR_CD ) dat
+		) dat
+		RIGHT OUTER JOIN
+		(
+		SELECT USR_AGE, HIGH_DGR_CD, CNT
+		FROM (
+		SELECT age as USR_AGE, dgr.HIGH_DGR_CD as HIGH_DGR_CD, 0 as CNT FROM
+		(SELECT 10 as age FROM DUAL UNION SELECT 20 as age FROM DUAL UNION SELECT 30 as age FROM DUAL UNION SELECT 40 as age FROM DUAL 
+		UNION SELECT 50 as age FROM DUAL UNION SELECT 60 as age FROM DUAL UNION SELECT 70 as age FROM DUAL UNION SELECT 80 as age FROM DUAL) age
+		JOIN
+		(SELECT 21 as HIGH_DGR_CD FROM DUAL UNION SELECT 22 as HIGH_DGR_CD FROM DUAL UNION SELECT 23 as HIGH_DGR_CD FROM DUAL UNION SELECT 24 as HIGH_DGR_CD FROM DUAL UNION SELECT null as HIGH_DGR_CD FROM DUAL ) dgr
+		) age ) age
+		ON age.USR_AGE = dat.USR_AGE
+		AND age.HIGH_DGR_CD = dat.HIGH_DGR_CD
+<!-- 		ORDER BY age.HIGH_DGR_CD, age.USR_AGE -->
+    </select>
+    
+</mapper>

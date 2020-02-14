@@ -2,12 +2,15 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="insert" key="selection"/>
+		<item value="httpclient" key="selection"/>
 		<item value="true" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="httpclient"/>
+			<item value="compress"/>
+			<item value="fileupload"/>
 			<item value="insert"/>
 			<item value="monthList"/>
 			<item value="usrNm"/>
@@ -20,9 +23,6 @@
 			<item value="highDgrColor"/>
 			<item value="Connector "/>
 			<item value="Etc"/>
-			<item value="utf"/>
-			<item value="wj-hide-ok"/>
-			<item value="dlgDetail"/>
 		</list>
 		<list key="replacehistory">
 			<item value="chartTest"/>
@@ -34,7 +34,7 @@
 		<item value="288" key="DIALOG_WIDTH"/>
 		<item value="1|맑은 고딕|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|맑은 고딕" key="DIALOG_FONT_NAME"/>
 		<item value="391" key="DIALOG_HEIGHT"/>
-		<item value="838" key="DIALOG_X_ORIGIN"/>
+		<item value="609" key="DIALOG_X_ORIGIN"/>
 		<item value="205" key="DIALOG_Y_ORIGIN"/>
 	</section>
 </section>

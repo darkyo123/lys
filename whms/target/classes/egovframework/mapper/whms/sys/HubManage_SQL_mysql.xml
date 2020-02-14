@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hubManageDAO">
+
+    <select id="selectDataList" resultType="egovframework.whms.sys.hubManage.service.HubManageVO">
+		SELECT
+			(SELECT AUTHOR_NM FROM COMTNAUTHORINFO WHERE AUTHOR_CODE = wum.USE_GRP_CD) AS useGrpNm,
+			USE_GRP_CD as useGrpCd, USR_ID as usrId, USR_NM as usrNm, BIR_DT as birDt, 
+			SEX_SECD as sexSecd, BLDTY_CD as bldtyCd, CONN_TELNO as connTelno
+		FROM    WHMS_USR_MST wum
+		WHERE 1=1
+		<if test='loginAuthorType == "U" '>
+			AND USE_GRP_CD = #{loginAuthorCd}
+		</if>
+		<if test="searchKeyword != null and searchCondition != null">
+			<if test=" searchKeyword != '' and searchCondition != '' ">
+				<if test="searchCondition == 'USE_GRP_NM'">
+					AND (SELECT AUTHOR_NM 
+					FROM COMTNAUTHORINFO 
+					WHERE AUTHOR_CODE = wum.USE_GRP_CD) LIKE concat('%', #{searchKeyword}, '%')
+				</if>
+				<if test="searchCondition != 'USE_GRP_NM'">
+				AND ${searchCondition} LIKE concat('%', #{searchKeyword}, '%')
+				</if>
+			</if>
+		</if>
+    </select>
+
+	<update id="doUpdate">
+		UPDATE WHMS_USR_MST 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE() ,
+		UPD_ID = #{loginId}
+		WHERE USR_ID = #{targetId}
+    </update>
+
+	<update id="doUpdateQslt">
+		UPDATE HLTH_QSLT_INF 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE()	,
+		UPD_ID = #{loginId} 
+		WHERE USR_ID = #{targetId}
+    </update>
+
+	<update id="doUpdatePressure">
+		UPDATE HYP_CHK_INF 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE()	,
+		UPD_ID = #{loginId} 
+		WHERE USR_ID = #{targetId}
+    </update>
+
+	<update id="doUpdateEdu">
+		UPDATE EDU_HIS 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE()	,
+		UPD_ID = #{loginId} 
+		WHERE USR_ID = #{targetId}
+    </update>
+
+	<update id="doUpdateMecku">
+		UPDATE MECKU_HIS 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE()	,
+		UPD_ID = #{loginId} 
+		WHERE USR_ID = #{targetId}
+    </update>
+
+	<update id="doUpdateAccd">
+		UPDATE PER_ACCD_HIS 
+		SET USE_GRP_CD           = #{useGrpCd}				,
+		SYS_UPD_DT = SYSDATE()	,
+		UPD_ID = #{loginId} 
+		WHERE USR_ID = #{targetId}
+    </update>
+
+</mapper>
